@@ -33,31 +33,31 @@ const workMenuKeyboard = {
     */
     [
       {
-        text: `${c.icons.chartBars} Boost volume`,
+        text: `${c.icons.chartBars} BOOST WALLET`,
         callback_data: `data-boosterShow-volume`,
       },
       {
-        text: `${c.icons.cup} Boost rank`,
+        text: `${c.icons.cup} BOOST RANK`,
         callback_data: `data-boosterShow-rank`,
       },
       {
-        text: `${c.icons.bag} Boost holders`,
+        text: `${c.icons.bag} BOOST HOLDERS`,
         callback_data: `data-boosterShow-holders`,
       },
     ],
     [
       {
-        text: `${c.icons.handshake} Referrals`,
+        text: `${c.icons.handshake}REFERRALS - EARN $$$${c.icons.handshake}`,
         callback_data: `referrals`,
       },
       {
-        text: `${c.icons.refresh} Refresh`,
+        text: `${c.icons.refresh} REFRESH DATA ${c.icons.refresh}`,
         callback_data: `work_menu_refresh`
       },
     ],
     [
       {
-        text: `${c.icons.write} Change token address`,
+        text: `${c.icons.write}CHANGE TOKEN ADDRESS TO BOOST ${c.icons.write}`,
         callback_data: `token_address_wizard`,
       },
     ],
@@ -66,12 +66,12 @@ const workMenuKeyboard = {
 
 export const workMenuBackButtonKeyboard = {
   inline_keyboard: [[{
-    text: `${c.icons.backArrow} Main menu`,
+    text: `${c.icons.backArrow} MAIN MENU`,
     callback_data: `work_menu`,
   }]]
 };
 export const workMenuBackButton = {
-  text: `${c.icons.backArrow} Main menu`,
+  text: `${c.icons.backArrow} MAIN MENU`,
   callback_data: `work_menu`,
 };
 
@@ -128,23 +128,23 @@ Press "${c.icons.lock} Unlock usage" once you're ready to boost your project.
 /* Start message */
 
 const startMessage = `
-${c.icons.chartBars} Welcome to Syndicate Boosting Bot ${c.icons.rocket}
+${c.icons.star} Welcome to Syndicate Boosting Bot ${c.icons.star}
 
 We are here to provide you the best Volume Boosting Bot on Solana
 
-${c.icons.flame} Efficient Volume Handling 
+${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
 - Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
 
-${c.icons.sprout} Organic Volume Module 
+${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
 - Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
 
-${c.icons.shield} Anti BOTS-Protection 
+${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 - Protect your trades with built-in defense against MEV exploitation.
 
 
 ${c.icons.chainLink} For support contact @SpiryBTC for sales @dukuweb3
 
-To start click "${c.icons.moonWhite} Enter Token Address ${c.icons.moonWhite}" button below.
+To start click "${c.icons.moonWhite} ENTER TOKEN CONTRACT ADDRESS ${c.icons.moonWhite}" button below.
 `;
 
 export async function showWelcomeMessage(ctx: Context) {
@@ -164,22 +164,23 @@ export async function showWelcomeMessage(ctx: Context) {
       },
     ],
     [{
-      text: `${c.icons.moonWhite} Enter token address to boost ${c.icons.moonWhite}`,
-      callback_data: `token_address_wizard`,
-    }],
-    [{
-      text: `${c.icons.cashBankHouse} Wallet`,
+      text: `${c.icons.cashBankHouse} WALLET ${c.icons.cashBankHouse}`,
       callback_data: `wallet`,
     }],
     [{
-      text: `${c.icons.handshake} Affiliate Program`,
+      text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ ${c.icons.handshake} `,
       callback_data: `referrals`,
+    }],
+    [{
+      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ${c.icons.moonWhite}`,
+      callback_data: `token_address_wizard`,
     }]
   ];
+  
 
   if (userSettings.selectedTokenAddr) {
     keyboard.push([{
-      text: `${c.icons.diskette} Use previous address ${c.icons.diskette}`,
+      text: `${c.icons.diskette} PREVIOUS TOKEN / MAIN MENU ${c.icons.diskette}`,
       callback_data: `work_menu`,
     }]);
   }

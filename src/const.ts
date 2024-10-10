@@ -27,7 +27,7 @@ export const POOL_DATA_LARGE_URL = "https://api.raydium.io/v2/sdk/liquidity/main
 export const JUPITER_API_URL = 'http://169.197.85.114:7676'; // self-hosted
 //export const JUPITER_API_URL = 'https://quote-api.jup.ag/v6'; // public
 
-export const JITO_BUNDLE_CHECK_TIMEOUT = 25 * 1000;
+export const JITO_BUNDLE_CHECK_TIMEOUT = 15 * 1000;
 export const JITO_STATUS_CHECK_INTERVAL = 2 * 1000; // check new bundle status this often
 
 export const BALANCE_CHANGE_CHECK_TIMEOUT = 30 * 1000;
@@ -78,6 +78,9 @@ export const icons = {
   tool: "🛠",
   key: "🔑",
   keyAntique: "🗝",
+  star: "⭐️",
+  unicorn: "🦄",
+  toolbox: "🧰",
   moonPlanet: "🪐",
   moonYellow: "🌕",
   moonWhite: "🪙",
