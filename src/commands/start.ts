@@ -159,8 +159,9 @@ ${c.icons.chainLink} For support contact @SpiryBTC for sales @dukuweb3
 To start click "${c.icons.moonWhite} ENTER TOKEN CONTRACT ADDRESS ${c.icons.moonWhite}" button below.
 `;
 
+
 export async function showWelcomeMessage(ctx: Context) {
-  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg');
+  
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
   if (!isPMs) {
