@@ -9,17 +9,17 @@ import * as h from "../helpers";
 import { showHelpMessage } from "./help";
 import { wizardSetAddr_name } from '../scenes/set-active-address';
 import { Context } from 'telegraf';
-
+import { getDexscreenerTokenInfo } from "../utils/dexscreener";
 
 const workMenuKeyboard = {
   inline_keyboard: [
     [
       {
-        text: `${c.icons.lock} Unlock usage`,
+        text: `${c.icons.lock} RENT BOOSTER ${c.icons.lock}`,
         callback_data: `show_rent`,
       },
       {
-        text: `${c.icons.cashBankHouse} My wallet`,
+        text: `${c.icons.cashBankHouse} WALLET`,
         callback_data: `wallet`,
       },
     ],
@@ -103,16 +103,16 @@ async function workMenu(ctx: any, onlyRefresh = false) {
     return ctx.scene.enter(wizardSetAddr_name, {});
   }
 
-  const text = `${c.icons.rocket}${c.icons.chartBars} Main menu ${c.icons.chartBars}${c.icons.rocket}
+  const text = `${c.icons.rocket}${c.icons.chartBars} MAIN MENU ${c.icons.chartBars}${c.icons.rocket}
 
-${c.icons.moonWhite} Token: <code>${settings.selectedTokenAddr}</code>
+${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
-${c.icons.clockRed} Rent time left: <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
+${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
-${c.icons.cashBanknote} Balance: <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
+${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
 
-Go to "${c.icons.cashBankHouse} My wallet" to deposit or withdraw funds.
-Press "${c.icons.lock} Unlock usage" once you're ready to boost your project.
+GO TO "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
+PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
 `;
 
   if (onlyRefresh)
