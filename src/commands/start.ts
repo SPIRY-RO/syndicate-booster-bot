@@ -15,7 +15,7 @@ const workMenuKeyboard = {
   inline_keyboard: [
     [
       {
-        text: `${c.icons.lock} RENT BOOSTER ${c.icons.lock}`,
+        text: `${c.icons.lock} RENT BOOSTER`,
         callback_data: `show_rent`,
       },
       {
@@ -47,17 +47,17 @@ const workMenuKeyboard = {
     ],
     [
       {
-        text: `${c.icons.handshake}REFERRALS - EARN $$$${c.icons.handshake}`,
+        text: `${c.icons.handshake}REFERRALS - EARN $$$$`,
         callback_data: `referrals`,
       },
       {
-        text: `${c.icons.refresh} REFRESH DATA ${c.icons.refresh}`,
+        text: `${c.icons.refresh} REFRESH DATA`,
         callback_data: `work_menu_refresh`
       },
     ],
     [
       {
-        text: `${c.icons.write}CHANGE TOKEN ADDRESS TO BOOST ${c.icons.write}`,
+        text: `${c.icons.write}CHANGE TOKEN ADDRESS TO BOOST`,
         callback_data: `token_address_wizard`,
       },
     ],
@@ -107,6 +107,8 @@ async function workMenu(ctx: any, onlyRefresh = false) {
 
 ${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
+
+
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
@@ -122,27 +124,38 @@ PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
   return;
 }
 
-
-
-
 /* Start message */
 
 const startMessage = `
+
+![Banner](https://i.imgur.com/SxXw8Fe.jpeg)
 ${c.icons.star} Welcome to Syndicate Boosting Bot ${c.icons.star}
+
+
 
 We are here to provide you the best Volume Boosting Bot on Solana
 
 ${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
 - Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
 
+
+
 ${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
 - Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
+
+
 
 ${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 - Protect your trades with built-in defense against MEV exploitation.
 
 
+
+
 ${c.icons.chainLink} For support contact @SpiryBTC for sales @dukuweb3
+
+
+
+
 
 To start click "${c.icons.moonWhite} ENTER TOKEN CONTRACT ADDRESS ${c.icons.moonWhite}" button below.
 `;
@@ -164,11 +177,11 @@ export async function showWelcomeMessage(ctx: Context) {
       },
     ],
     [{
-      text: `${c.icons.cashBankHouse} WALLET ${c.icons.cashBankHouse}`,
+      text: `${c.icons.cashBankHouse} WALLET`,
       callback_data: `wallet`,
     }],
     [{
-      text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ ${c.icons.handshake} `,
+      text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ `,
       callback_data: `referrals`,
     }],
     [{
