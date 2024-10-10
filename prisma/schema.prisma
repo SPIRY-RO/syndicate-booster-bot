@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+model Booster {
+  internalID            String @id @default(auto()) @map("_id") @db.ObjectId
+  ownerTgID             String @default("")
+  type                  String
+  tokenAddress          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Puppet {
+  internalID            String @id @default(auto()) @map("_id") @db.ObjectId
+  ownerTgID             String @default("")
+  boosterID             String
+  privKey               String
+  pubKey                String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+
+model User {
+  internalID            String @id @default(auto()) @map("_id") @db.ObjectId // original definition
+  tgID                  String @unique
+  isBotAdmin            Boolean @default(false)
+  workWalletPrivKey     String
+  workWalletPubkey      String
+  withdrawWalletAddr    String @default("")
+  rentExpiresAt         Int @default(0)
+  referredByTgID        String @default("")
+  totalRefRewards       Float    @default(0.0)
+  lastPuppetPKs         String[] @default([])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Settings {
+  internalID            String @id @default(auto()) @map("_id") @db.ObjectId // original definition
+  ownerTgID             String @unique
+  selectedTokenAddr     String @default("")
+  volumeSpeed           Int @default(1)
+  volumeDuration        Int @default(3600)
+  volumeParallelWallets Int @default(2)
+  holdersNewHolders     Int @default(500)
+  rankParallelWallets   Int @default(10)
+  rankRotateEveryNTx    Int @default(40)
+}
