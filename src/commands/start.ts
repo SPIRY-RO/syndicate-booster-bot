@@ -128,7 +128,6 @@ PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
 
 const startMessage = `
 
-![Banner](https://i.imgur.com/SxXw8Fe.jpeg)
 ${c.icons.star} Welcome to Syndicate Boosting Bot ${c.icons.star}
 
 
@@ -161,6 +160,7 @@ To start click "${c.icons.moonWhite} ENTER TOKEN CONTRACT ADDRESS ${c.icons.moon
 `;
 
 export async function showWelcomeMessage(ctx: Context) {
+  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg');
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
   if (!isPMs) {
