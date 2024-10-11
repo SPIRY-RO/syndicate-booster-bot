@@ -9,7 +9,7 @@ const JITO_TIP_STAT_CHECK_INTERVAL = 30 * 1000;
 const TIP_STATS_API_URL = "http://bundles-api-rest.jito.wtf/api/v1/bundles/tip_floor";
 const OVER_99_INCREMENT_FACTOR = 1.3;
 
-const AVG_TIP_MAX_LIMIT = 1500000;
+const AVG_TIP_MAX_LIMIT = 2500000;
 
 
 

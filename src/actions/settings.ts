@@ -11,6 +11,10 @@ const speedKeyboard = {
   inline_keyboard: [
     [
       {
+        text: `${c.icons.tractor} Super slow`,
+        callback_data: `data-settings-speed-0`,
+      },
+      {
         text: `${c.icons.tractor} Very slow`,
         callback_data: `data-settings-speed-1`,
       },
@@ -158,6 +162,10 @@ const volumeParallelWalletsKeyboard = {
       {
         text: `4`,
         callback_data: `data-settings-parallelVolume-4`,
+      },
+      {
+        text: `5`,
+        callback_data: `data-settings-parallelVolume-3`,
       },
     ],
     [
