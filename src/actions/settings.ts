@@ -165,7 +165,7 @@ const volumeParallelWalletsKeyboard = {
       },
       {
         text: `5`,
-        callback_data: `data-settings-parallelVolume-3`,
+        callback_data: `data-settings-parallelVolume-5`,
       },
     ],
     [
