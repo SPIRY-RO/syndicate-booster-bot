@@ -85,7 +85,7 @@ class PuppetBase {
       h.debug(`${this.tag} waiting for ${delaySec}s...`);
     let remainingTime = delaySec * 1000;
     while (remainingTime > 5000) {
-      h.sleep(5000);
+      await h.sleep(5000);
       remainingTime -= 5000;
       if (this.wasAskedToStop)
         return;
