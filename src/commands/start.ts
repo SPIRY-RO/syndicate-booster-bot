@@ -33,7 +33,7 @@ const workMenuKeyboard = {
     */
     [
       {
-        text: `${c.icons.chartBars} BOOST WALLET`,
+        text: `${c.icons.chartBars} BOOST VOLUME`,
         callback_data: `data-boosterShow-volume`,
       },
       {
