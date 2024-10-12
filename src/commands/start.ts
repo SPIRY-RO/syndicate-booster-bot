@@ -33,7 +33,7 @@ const workMenuKeyboard = {
     */
     [
       {
-        text: `${c.icons.chartBars} BOOST VOLUME`,
+        text: `${c.icons.chartBars} BOOST VOLUME `,
         callback_data: `data-boosterShow-volume`,
       },
       {
@@ -57,7 +57,7 @@ const workMenuKeyboard = {
     ],
     [
       {
-        text: `${c.icons.write}CHANGE TOKEN ADDRESS TO BOOST`,
+        text: `${c.icons.write}CHANGE CONTRACT ADDRESS`,
         callback_data: `token_address_wizard`,
       },
     ],
@@ -108,7 +108,6 @@ async function workMenu(ctx: any, onlyRefresh = false) {
 ${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
 
-
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
@@ -128,35 +127,32 @@ PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
 
 const startMessage = `
 
-${c.icons.star} Welcome to Syndicate Boosting Bot ${c.icons.star}
-
+${c.icons.star} **SYNDICATE BOOSTING BOT** ${c.icons.star}
 
 
 We are here to provide you the best Volume Boosting Bot on Solana
 
-${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
+${c.icons.flame} **Efficient Volume Handling** ${c.icons.flame}
 - Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
 
 
 
-${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
+${c.icons.sprout} **Organic Volume Module** ${c.icons.sprout}
 - Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
 
 
 
-${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
+${c.icons.shield} **Anti MEV-Protection** ${c.icons.shield}
 - Protect your trades with built-in defense against MEV exploitation.
 
 
 
 
-${c.icons.chainLink} For support contact @SpiryBTC for sales @dukuweb3
+${c.icons.chainLink} **For support contact @SpiryBTC for sales @dukuweb3**
 
 
 
-
-
-To start click "${c.icons.moonWhite} ENTER TOKEN CONTRACT ADDRESS ${c.icons.moonWhite}" button below.
+To start click "${c.icons.moonWhite} **ENTER TOKEN CONTRACT ADDRESS** ${c.icons.moonWhite}" button below.
 `;
 
 
@@ -173,7 +169,7 @@ export async function showWelcomeMessage(ctx: Context) {
   const keyboard = [
     [
       {
-        text: "=== CHOOSE FROM MENU BELOW ===",
+        text: "⬇ CHOOSE FROM MENU BELOW ⬇",
         callback_data: "none",
       },
     ],
@@ -186,7 +182,7 @@ export async function showWelcomeMessage(ctx: Context) {
       callback_data: `referrals`,
     }],
     [{
-      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ${c.icons.moonWhite}`,
+      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
       callback_data: `token_address_wizard`,
     }]
   ];
@@ -194,7 +190,7 @@ export async function showWelcomeMessage(ctx: Context) {
 
   if (userSettings.selectedTokenAddr) {
     keyboard.push([{
-      text: `${c.icons.diskette} PREVIOUS TOKEN / MAIN MENU ${c.icons.diskette}`,
+      text: `${c.icons.diskette} PREVIOUS TOKEN / MAIN MENU`,
       callback_data: `work_menu`,
     }]);
   }

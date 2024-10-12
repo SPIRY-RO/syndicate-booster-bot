@@ -9,7 +9,7 @@ export const EMPTY_PUPPET_BALANCE_THRESHOLD = 0.006; // when a puppet is conside
 export const RESERVED_PUPPET_BALANCE = 0.005; // min to keep when transacting
 export const MIN_NEW_PUPPET_BUDGET = EMPTY_PUPPET_BALANCE_THRESHOLD + 0.002;
 
-export const REFERRAL_FEE_PERC = 10;
+export const REFERRAL_FEE_PERC = 20;
 export const MIN_REF_CLAIM_AMOUNT_SOL = envConf.TEST_MODE ? 0.001 : 0.01;
 
 export const NEW_BOOSTER_BALANCE_CHECK_INTERVAL = envConf.TEST_MODE ? 5 * 1000 : 30 * 1000;
