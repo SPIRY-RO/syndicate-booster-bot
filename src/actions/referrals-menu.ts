@@ -42,7 +42,7 @@ ${c.icons.cashBankHouse} All-time rewards: ${user.totalRefRewards} SOL
       inline_keyboard: [
         [{
           text: `${c.icons.backArrow} Back`,
-          callback_data: `work_menu`,
+          callback_data: `welcome_message`,
         }],
       ]
     },

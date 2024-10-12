@@ -127,32 +127,28 @@ PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
 
 const startMessage = `
 
-${c.icons.star} **SYNDICATE BOOSTING BOT** ${c.icons.star}
+${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
 
 
 We are here to provide you the best Volume Boosting Bot on Solana
 
-${c.icons.flame} **Efficient Volume Handling** ${c.icons.flame}
+${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
 - Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
 
 
 
-${c.icons.sprout} **Organic Volume Module** ${c.icons.sprout}
+${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
 - Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
 
 
 
-${c.icons.shield} **Anti MEV-Protection** ${c.icons.shield}
+${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 - Protect your trades with built-in defense against MEV exploitation.
 
 
 
+${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3 
 
-${c.icons.chainLink} **For support contact @SpiryBTC for sales @dukuweb3**
-
-
-
-To start click "${c.icons.moonWhite} **ENTER TOKEN CONTRACT ADDRESS** ${c.icons.moonWhite}" button below.
 `;
 
 
