@@ -179,6 +179,8 @@ export async function showWelcomeMessage(ctx: Context) {
   }
   const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
   await ctx.replyWithPhoto('https://i.imgur.com/QNjo4sZ.jpeg');
+
+  
   const keyboard = [
     [{
       text: `${c.icons.green} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
