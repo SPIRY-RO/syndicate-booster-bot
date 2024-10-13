@@ -140,45 +140,34 @@ If any inquiries don't hesitate to reach us directly.
   return;
 }
 export async function showWelcomeMessage(ctx: Context) {
-
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
   if (!isPMs) {
     await h.tryReply(ctx, `This command is intended for use in PMs`);
     return;
   }
-  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
-  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg')
+  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id);
+  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg');
 
-/* Start message */
+  /* Start message */
+  const startMessage = `
+![Banner](https://i.imgur.com/SxXw8Fe.jpeg)
 
-const startMessage = `
-        ${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
-
+${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
 
 We are here to provide you the best Volume Boosting Bot on Solana
 
 ${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
 - Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
 
-
-
 ${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
 - Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
-
-
 
 ${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 - Protect your trades with built-in defense against MEV exploitation.
 
-
-
 ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3 
-
 `;
-
-
-
 
   const keyboard = [
     [{
@@ -193,9 +182,7 @@ ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3
       text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ `,
       callback_data: `referrals`,
     }],
-
   ];
-  
 
   if (userSettings.selectedTokenAddr) {
     keyboard.push([{
@@ -204,10 +191,10 @@ ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3
     }]);
   }
 
-  await h.tryEditOrReply(ctx, startMessage, { parse_mode: 'HTML' ,
+  await h.tryEditOrReply(ctx, startMessage, {
     reply_markup: {
       inline_keyboard: keyboard,
-    }
+    },
   });
   return;
 }
