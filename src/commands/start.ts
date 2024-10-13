@@ -149,7 +149,7 @@ export async function showWelcomeMessage(ctx: Context) {
   const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id);
 
   // Send the image banner only once
-  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg');
+
 
   /* Start message */
   const startMessage = `
