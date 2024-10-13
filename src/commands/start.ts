@@ -18,10 +18,7 @@ const workMenuKeyboard = {
         text: `${c.icons.lock} RENT BOOSTER`,
         callback_data: `show_rent`,
       },
-      {
-        text: `${c.icons.cashBankHouse} WALLET`,
-        callback_data: `wallet`,
-      },
+
     ],
     /*
     [
@@ -55,6 +52,12 @@ const workMenuKeyboard = {
         callback_data: `work_menu_refresh`
       },
     ],
+    [
+    {
+      text: `${c.icons.cashBankHouse} WALLET`,
+      callback_data: `wallet`,
+    }
+  ],
     [
       {
         text: `${c.icons.write}CHANGE CONTRACT ADDRESS`,
