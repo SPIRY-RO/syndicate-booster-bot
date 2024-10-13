@@ -139,11 +139,20 @@ If any inquiries don't hesitate to reach us directly.
     await h.tryEditOrReply(ctx, text, { reply_markup: workMenuKeyboard, ...DEF_MESSAGE_OPTS });
   return;
 }
+export async function showWelcomeMessage(ctx: Context) {
+
+  h.answerCbQuerySafe(ctx);
+  const isPMs = (ctx.chat?.type === "private");
+  if (!isPMs) {
+    await h.tryReply(ctx, `This command is intended for use in PMs`);
+    return;
+  }
+  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
+  await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg')
 
 /* Start message */
 
 const startMessage = `
-
         ${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
 
 
@@ -168,17 +177,6 @@ ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3
 
 `;
 
-
-export async function showWelcomeMessage(ctx: Context) {
-  await ctx.replyWithPhoto('https://i.imgur.com/QNjo4sZ.jpeg');
-  h.answerCbQuerySafe(ctx);
-  const isPMs = (ctx.chat?.type === "private");
-  if (!isPMs) {
-    await h.tryReply(ctx, `This command is intended for use in PMs`);
-    return;
-  }
-  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
-  
 
 
   const keyboard = [
