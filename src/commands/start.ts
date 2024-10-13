@@ -113,9 +113,7 @@ ${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
-
-
-
+${c.icons.cashBankHouse} YOUR WALLET ADDRESS : <code>${h.keypairFrom(user.workWalletPrivKey).publicKey.toBase58()}</code>
 
 
 
