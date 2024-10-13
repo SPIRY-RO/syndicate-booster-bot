@@ -169,7 +169,6 @@ ${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 
 ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3 
 `;
-await ctx.reply(startMessage, { parse_mode: 'HTML' });
 
   const keyboard = [
     [{
