@@ -147,11 +147,12 @@ export async function showWelcomeMessage(ctx: Context) {
     return;
   }
   const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id);
+
+  // Send the image banner only once
   await ctx.replyWithPhoto('https://i.imgur.com/SxXw8Fe.jpeg');
 
   /* Start message */
   const startMessage = `
-![Banner](https://i.imgur.com/SxXw8Fe.jpeg)
 
 ${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
 
@@ -168,6 +169,7 @@ ${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
 
 ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3 
 `;
+await ctx.reply(startMessage, { parse_mode: 'HTML' });
 
   const keyboard = [
     [{
