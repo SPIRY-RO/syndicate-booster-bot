@@ -175,7 +175,7 @@ export async function showWelcomeMessage(ctx: Context) {
       },
     ],
     [{
-      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
+      text: `${c.icons.green} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
       callback_data: `token_address_wizard`,
     }],
     [{
