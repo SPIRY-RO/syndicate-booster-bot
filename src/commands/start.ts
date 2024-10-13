@@ -177,7 +177,7 @@ ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3
 
 `;
 
-await ctx.reply(startMessage, { parse_mode: 'HTML' });
+
 
 
   const keyboard = [
@@ -204,7 +204,7 @@ await ctx.reply(startMessage, { parse_mode: 'HTML' });
     }]);
   }
 
-  await h.tryEditOrReply(ctx, startMessage, {
+  await h.tryEditOrReply(ctx, startMessage, { parse_mode: 'HTML' ,
     reply_markup: {
       inline_keyboard: keyboard,
     }
