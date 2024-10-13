@@ -32,6 +32,8 @@ export async function showWallet(ctx: Context) {
   await tryEditOrReply(
     ctx,
     `
+   ⫸ WALLET OVERVIEW⫷
+
 ${c.icons.cashBankHouse} Balance: <b>${
       balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? "empty" : `${balanceSol.toFixed(4)} SOL`
     }</b>

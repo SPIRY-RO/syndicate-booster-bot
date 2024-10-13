@@ -105,15 +105,17 @@ async function workMenu(ctx: any, onlyRefresh = false) {
 
   const text = `⫸ MAIN MENU ⫷
 
-⫸ TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
+${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
 
-⫸ RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
+${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
-⫸ BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
+${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
 
-GO TO "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
-PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
+⫸ "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
+⫸ "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
+
+If any inquiries don't hesitate to reach us directly.
 `;
 
   if (onlyRefresh)
@@ -170,6 +172,10 @@ export async function showWelcomeMessage(ctx: Context) {
       },
     ],
     [{
+      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
+      callback_data: `token_address_wizard`,
+    }],
+    [{
       text: `${c.icons.cashBankHouse} WALLET`,
       callback_data: `wallet`,
     }],
@@ -177,16 +183,13 @@ export async function showWelcomeMessage(ctx: Context) {
       text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ `,
       callback_data: `referrals`,
     }],
-    [{
-      text: `${c.icons.moonWhite} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
-      callback_data: `token_address_wizard`,
-    }]
+
   ];
   
 
   if (userSettings.selectedTokenAddr) {
     keyboard.push([{
-      text: `${c.icons.diskette} PREVIOUS TOKEN / MAIN MENU`,
+      text: `${c.icons.diskette} PREVIOUS TOKEN -  / MAIN MENU`,
       callback_data: `work_menu`,
     }]);
   }
