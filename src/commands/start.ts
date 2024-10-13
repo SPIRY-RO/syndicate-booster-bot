@@ -178,14 +178,8 @@ export async function showWelcomeMessage(ctx: Context) {
     return;
   }
   const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
-
+  await ctx.replyWithPhoto('https://i.imgur.com/QNjo4sZ.jpeg');
   const keyboard = [
-    [
-      {
-        text: "⬇ CHOOSE FROM MENU BELOW ⬇",
-        callback_data: "none",
-      },
-    ],
     [{
       text: `${c.icons.green} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
       callback_data: `token_address_wizard`,
