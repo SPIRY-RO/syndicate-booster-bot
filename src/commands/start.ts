@@ -170,7 +170,7 @@ ${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3
 
 
 export async function showWelcomeMessage(ctx: Context) {
-  
+  await ctx.replyWithPhoto('https://i.imgur.com/QNjo4sZ.jpeg');
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
   if (!isPMs) {
@@ -178,9 +178,9 @@ export async function showWelcomeMessage(ctx: Context) {
     return;
   }
   const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
-  await ctx.replyWithPhoto('https://i.imgur.com/QNjo4sZ.jpeg');
-
   
+
+
   const keyboard = [
     [{
       text: `${c.icons.green} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
