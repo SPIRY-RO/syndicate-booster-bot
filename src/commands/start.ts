@@ -112,11 +112,25 @@ ${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
 
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
-
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
 
+
+
+
+
+
 ⫸ "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
-⫸ "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
+
+⫸ "${c.icons.lock} RENT BOOSTER" TO RENT THE BOT AND START
+
+⫸ "${c.icons.chartBars} BOOST VOLUME" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN VOLUME HERE.
+
+⫸ "${c.icons.cup} BOOST RANK" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN RANK HERE.
+
+⫸ "${c.icons.bag} BOOST HOLDERS" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN HOLDERS HERE.
+
+
+
 
 If any inquiries don't hesitate to reach us directly.
 `;
