@@ -20,7 +20,7 @@ export async function showReferralMenu(ctx: Context) {
     }
   });
 
-  let text = `${c.icons.handshake} Referrals ${c.icons.handshake}
+  let text = `⫸ Referrals ⫷
 
 Get a share of profit from every time your referral rents our bot!
 Get them to start the bot via your link once, and bot will generate revenue for you every time they pay rent!

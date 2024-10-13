@@ -71,7 +71,7 @@ async function showVolumeBooster(ctx: Context, boosterID?: string, refreshOnly =
   */
   const totalVolumeUSD = (((existingBooster?.metrics?.buyVolume || 0) + (existingBooster?.metrics?.sellVolume || 0)) * solanaUsdPrice).toFixed(2);
   const totalBalance = Number((await userManager.getBalFromAllAssociatedWallets_inSol(user)).toFixed(4));
-  let volumeBoosterText = `${c.icons.chartBars} Volume Booster ${c.icons.chartBars}
+  let volumeBoosterText = `⫸ Volume Booster ⫷
 
 ${c.icons.moonWhite} Token:
 <code>${settings.selectedTokenAddr}</code>

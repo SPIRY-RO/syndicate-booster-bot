@@ -103,14 +103,14 @@ async function workMenu(ctx: any, onlyRefresh = false) {
     return ctx.scene.enter(wizardSetAddr_name, {});
   }
 
-  const text = `${c.icons.rocket}${c.icons.chartBars} MAIN MENU ${c.icons.chartBars}${c.icons.rocket}
+  const text = `⫸ MAIN MENU ⫷
 
-${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
+⫸ TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
 
 
-${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
+⫸ RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
-${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
+⫸ BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
 
 GO TO "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
 PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
@@ -127,7 +127,7 @@ PRESS "${c.icons.lock} UNLOCK USAGE" ONCE YOU'RE READY TO BOOST YOUR PROJECT.
 
 const startMessage = `
 
-${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
+        ${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
 
 
 We are here to provide you the best Volume Boosting Bot on Solana
