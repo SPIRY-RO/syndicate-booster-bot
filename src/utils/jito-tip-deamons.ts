@@ -72,7 +72,7 @@ async function getAverageJitoTip() {
   try {
     const response = await axios({
       method: "get",
-      url: "http://bundles-api-rest.jito.wtf/api/v1/bundles/tip_floor",
+      url: "https://explorer.jito.wtf/bundle-explorer?sortBy=Tip",
       params: {
         limit: 200,
         sort: "Time",
