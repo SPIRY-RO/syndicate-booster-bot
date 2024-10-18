@@ -72,13 +72,14 @@ async function getAverageJitoTip() {
   try {
     const response = await axios({
       method: "get",
-      url: "https://explorer.jito.wtf/bundle-explorer?sortBy=Tip",
+      url: "https://explorer.jito.wtf/wtfrest/api/v1/bundles/recent",
       params: {
         limit: 200,
         sort: "Time",
         asc: false,
         timeframe: "Week",
       },
+      
     });
 
     const data = response.data;
