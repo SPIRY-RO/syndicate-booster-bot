@@ -23,7 +23,7 @@ export async function makeAndSendJitoBundle(
   txs: solana.VersionedTransaction[], keypair: solana.Keypair, tipOverride_inLamps?: number,
 ): Promise<boolean> {
   if (!tipOverride_inLamps)
-    tipOverride_inLamps = 1250000;
+    tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
 
   try {
     //const txNum = Math.ceil(txs.length / 3);
