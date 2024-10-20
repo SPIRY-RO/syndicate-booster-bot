@@ -18,12 +18,18 @@ const MAX_TXS = 4;
 const jitoKey = solana.Keypair.fromSecretKey(base58.decode(envConf.JITO_AUTH_PRIVATE_KEY));
 export const searchClient = searcherClient(envConf.BLOCK_ENGINE_URL, jitoKey);
 
+export function floatToLamports(float: number): number {
+  return Math.floor(float * solana.LAMPORTS_PER_SOL);
+}
 
 export async function makeAndSendJitoBundle(
-  txs: solana.VersionedTransaction[], keypair: solana.Keypair, tipOverride_inLamps?: number,
+  txs: solana.VersionedTransaction[],
+  keypair: solana.Keypair,
+  tipOverride_inLamps?: number
 ): Promise<boolean> {
   if (!tipOverride_inLamps)
-    tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
+    // tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
+    tipOverride_inLamps = floatToLamports(0.001);
 
   try {
     //const txNum = Math.ceil(txs.length / 3);
@@ -55,9 +61,7 @@ export async function makeAndSendJitoBundle(
   }
 }
 
-async function _bundleExecuter(
-  txs: solana.VersionedTransaction[], signerKeypair: solana.Keypair, tipInLamps: number,
-) {
+async function _bundleExecuter(txs: solana.VersionedTransaction[], signerKeypair: solana.Keypair, tipInLamps: number) {
   try {
     //const bundleTransactionLimit = 4; // this is a hard-limit as far as I can tell
     const bundleTransactionLimit = 5; // this is a hard-limit as far as I can tell
@@ -74,14 +78,12 @@ async function _bundleExecuter(
   }
 }
 
-
-
 async function build_bundle(
   search: SearcherClient,
   bundleTransactionLimit: number,
   txs: solana.VersionedTransaction[],
   signerKeypair: solana.Keypair,
-  tipInLamps: number,
+  tipInLamps: number
 ) {
   const tipAccount = getRandomTipAccount();
 
@@ -93,12 +95,7 @@ async function build_bundle(
 
   h.debug(`[jito] tip is ${tipInLamps} lamports`);
 
-  let maybeBundle = bund.addTipTx(
-    signerKeypair,
-    tipInLamps,
-    tipAccount,
-    resp.blockhash
-  );
+  let maybeBundle = bund.addTipTx(signerKeypair, tipInLamps, tipAccount, resp.blockhash);
 
   if (isError(maybeBundle)) {
     throw maybeBundle;
@@ -113,7 +110,6 @@ async function build_bundle(
   }
   return null;
 }
-
 
 const onBundleResult = (searchClient: SearcherClient): Promise<number> => {
   let first = 0;
@@ -179,10 +175,7 @@ export async function getBundleStatuses(bundleIds: [string]) {
   }
 }
 
-
 async function waitUnilBundleSucceeds(bundleID: string) {
-  if (!bundleID)
-    return false;
+  if (!bundleID) return false;
   return await statusChecker.waitForResult(bundleID);
 }
-
