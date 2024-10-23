@@ -93,11 +93,11 @@ async function build_bundle(
   const resp = await web3Connection.getLatestBlockhash("processed");
   bund.addTransactions(...txs);
 
-  //let jitoTipLamps = h.incrementByPercent(jitoTipSizeFor.chanceOf99, 10);
+  let jitoTipLamps = averageJitoTip * solana.LAMPORTS_PER_SOL;
 
   h.debug(`[jito] tip is ${tipInLamps} lamports`);
 
-  let maybeBundle = bund.addTipTx(signerKeypair, tipInLamps, tipAccount, resp.blockhash);
+  let maybeBundle = bund.addTipTx(signerKeypair, jitoTipLamps, tipAccount, resp.blockhash);
 
   if (isError(maybeBundle)) {
     throw maybeBundle;
