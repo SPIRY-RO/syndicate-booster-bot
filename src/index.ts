@@ -11,7 +11,9 @@ import UserManager from "./classes/UserManager";
 import { showUserBoosters } from "./actions/boosters-show-all";
 import { showBooster } from "./actions/booster-show";
 import {
-  referIfNeeded_thenShowStart, refreshWorkMenu, showWelcomeMessage as showWelcomeMessage,
+  referIfNeeded_thenShowStart,
+  refreshWorkMenu,
+  showWelcomeMessage as showWelcomeMessage,
   showWorkMenu,
 } from "./commands/start";
 import { showReferralMenu } from "./actions/referrals-menu";
@@ -20,7 +22,15 @@ import { showWallet, withdrawFunds } from "./actions/wallet";
 import { wizardWalletSet, wizardWalletSet_name } from "./scenes/wallet-set";
 import { createAndStartBooster } from "./actions/booster-start";
 import {
-  holderSettingsDecrease, holderSettingsIncrease, setChangeMakerFreqSettings, setDurationSettings, setRankParallelSettings, setSpeedSettings, setVolumeParallelSettings, showChangeMakerFreqSettings, showDurationSettings,
+  holderSettingsDecrease,
+  holderSettingsIncrease,
+  setChangeMakerFreqSettings,
+  setDurationSettings,
+  setRankParallelSettings,
+  setSpeedSettings,
+  setVolumeParallelSettings,
+  showChangeMakerFreqSettings,
+  showDurationSettings,
   showRankParallelSettings,
   showSpeedSettings,
   showVolumeParallelSettings,
@@ -31,7 +41,6 @@ import { stopBooster } from "./actions/booster-stop";
 import { runJitoTipAccsUpdater, runJitoTipMetricUpdater } from "./utils/jito-tip-deamons";
 import JitoStatusChecker from "./classes/JitoStatusChecker";
 import { initSolanaPriceFeedDaemon } from "./utils/price-feeds";
-
 
 export const prisma = new PrismaClient();
 export const telegraf = new Telegraf(envConf.TG_BOT_TOKEN);
@@ -49,11 +58,7 @@ console.log(`\nBooster bot starting up`);
 
 //console.log(bs58.encode(solana.Keypair.generate().secretKey));
 
-
-const stage = new Scenes.Stage([
-  wizardWalletSet,
-  wizardSetAddr
-]);
+const stage = new Scenes.Stage([wizardWalletSet, wizardSetAddr]);
 
 telegraf.use(session());
 telegraf.use(stage.middleware()); // in case you'll add scenes
@@ -157,11 +162,10 @@ process.once("SIGTERM", () => telegraf.stop("SIGTERM"));
 
 telegraf.launch();
 
-runJitoTipMetricUpdater();
+// runJitoTipMetricUpdater();
 runJitoTipAccsUpdater();
 initSolanaPriceFeedDaemon();
 statusChecker.run();
-
 
 //adjustDatabaseValues();
 async function adjustDatabaseValues() {
@@ -170,7 +174,7 @@ async function adjustDatabaseValues() {
   await prisma.settings.updateMany({
     data: {
       rankParallelWallets: desiredParallelRankWallets,
-    }
+    },
   });
   console.log(`Database values adjusted as requested`);
 }
