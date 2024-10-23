@@ -12,6 +12,7 @@ import * as c from "../const";
 import { envConf } from "../config";
 import { JITO_BUNDLE_TIMEOUT } from "../const";
 import { getRandomTipAccount, jitoTip } from "./jito-tip-deamons";
+import { averageJitoTip } from "./jito-avgtip";
 
 const MAX_TXS = 4;
 
@@ -29,7 +30,8 @@ export async function makeAndSendJitoBundle(
 ): Promise<boolean> {
   if (!tipOverride_inLamps)
     // tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
-    tipOverride_inLamps = floatToLamports(0.0025);
+    // tipOverride_inLamps = floatToLamports(0.0025);
+    tipOverride_inLamps = floatToLamports(averageJitoTip);
 
   try {
     //const txNum = Math.ceil(txs.length / 3);
