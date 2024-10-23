@@ -41,6 +41,7 @@ import { stopBooster } from "./actions/booster-stop";
 import { runJitoTipAccsUpdater, runJitoTipMetricUpdater } from "./utils/jito-tip-deamons";
 import JitoStatusChecker from "./classes/JitoStatusChecker";
 import { initSolanaPriceFeedDaemon } from "./utils/price-feeds";
+import { initJitoAverageTipLoop } from "./utils/jito-avgtip";
 
 export const prisma = new PrismaClient();
 export const telegraf = new Telegraf(envConf.TG_BOT_TOKEN);
@@ -163,6 +164,7 @@ process.once("SIGTERM", () => telegraf.stop("SIGTERM"));
 telegraf.launch();
 
 // runJitoTipMetricUpdater();
+initJitoAverageTipLoop();
 runJitoTipAccsUpdater();
 initSolanaPriceFeedDaemon();
 statusChecker.run();
