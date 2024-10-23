@@ -93,7 +93,7 @@ async function build_bundle(
   const resp = await web3Connection.getLatestBlockhash("processed");
   bund.addTransactions(...txs);
 
-  let jitoTipLamps = averageJitoTip * solana.LAMPORTS_PER_SOL;
+  let jitoTipLamps = Math.floor(averageJitoTip * solana.LAMPORTS_PER_SOL);
 
   h.debug(`[jito] tip is ${tipInLamps} lamports`);
 
