@@ -1,10 +1,8 @@
-
 import PuppetBase from './base';
 import * as c from '../../../const';
 import * as h from '../../../helpers';
 import * as sh from '../../../utils/solana_helpers';
 import { makeAndSendJitoBundle } from '../../../utils/jito';
-
 
 class PuppetVolume extends PuppetBase {
 
@@ -29,12 +27,17 @@ class PuppetVolume extends PuppetBase {
           h.debug(`${this.tag} found reason to stop; breaking main loop...`);
           break;
         }
-        const success = await this.doAtomicTx(lastTokenBalance);
-        if (success) {
-          const { balance: newBalance } = await sh.waitForBalanceChange(this.lastBalance, this.address);
-          this.lastBalance = newBalance as number;
-          lastTokenBalance = (await sh.getTokenAccBalance(this._tokenAccAddr!))?.uiAmount || lastTokenBalance;
+        let success = false;
+        while (!success) {
+          success = await this.doAtomicTx(lastTokenBalance);
+          if (!success) {
+            console.log(`${this.tag} Atomic transaction failed. Retrying...`);
+            await h.sleep(1000); // Retry after 1 second
+          }
         }
+        const { balance: newBalance } = await sh.waitForBalanceChange(this.lastBalance, this.address);
+        this.lastBalance = newBalance as number;
+        lastTokenBalance = (await sh.getTokenAccBalance(this._tokenAccAddr!))?.uiAmount || lastTokenBalance;
         await this._waitBetweenBoosts();
       }
       await this.tryCloseAndSalvageFunds_alwaysCleanup(this.booster.keypair.publicKey);
@@ -44,7 +47,6 @@ class PuppetVolume extends PuppetBase {
       await this._cleanup();
     }
   }
-
 
   async doAtomicTx(existingTokens_inSol: number = 0): Promise<boolean> {
     const fromAmountSol = Number(this.lastBalance) - c.RESERVED_PUPPET_BALANCE;
@@ -74,7 +76,6 @@ class PuppetVolume extends PuppetBase {
     }
     return success;
   }
-
 
   protected _hasReasonToStop(): boolean {
     if (this.wasAskedToStop) {
