@@ -58,17 +58,6 @@ async function showVolumeBooster(ctx: Context, boosterID?: string, refreshOnly =
       text: `${c.icons.white} Stopping...`,
       callback_data: `#`,
     };
-
-  /*
-  const mainWalletBalance = Number((await userManager.getWorkWalletBalanceFor(user)).toFixed(4));
-  let lastKnownPuppetBalances = 0;
-  if (existingBooster) {
-    for (const puppet of existingBooster.puppets) {
-      lastKnownPuppetBalances += puppet.lastBalance;
-    }
-  }
-  const totalBalance = Number((mainWalletBalance + lastKnownPuppetBalances).toFixed(4));
-  */
   const totalVolumeUSD = (((existingBooster?.metrics?.buyVolume || 0) + (existingBooster?.metrics?.sellVolume || 0)) * solanaUsdPrice).toFixed(2);
   const totalBalance = Number((await userManager.getBalFromAllAssociatedWallets_inSol(user)).toFixed(4));
   let volumeBoosterText = `⫸ Volume Booster ⫷
@@ -130,9 +119,6 @@ Total volume generated: $${totalVolumeUSD}
     await h.tryEditOrReply(ctx, volumeBoosterText, keyboard);
   return;
 }
-
-
-
 
 async function showHoldersBooster(ctx: Context, boosterID?: string, refreshOnly = false) {
   h.answerCbQuerySafe(ctx);
@@ -246,17 +232,6 @@ export async function showRankBooster(ctx: Context, boosterID?: string, refreshO
       text: `${c.icons.white} Stopping...`,
       callback_data: `#`,
     };
-
-  /*
-  const mainWalletBalance = Number((await userManager.getWorkWalletBalanceFor(user)).toFixed(4));
-  let lastKnownPuppetBalances = 0;
-  if (existingBooster) {
-    for (const puppet of existingBooster.puppets) {
-      lastKnownPuppetBalances += puppet.lastBalance;
-    }
-  }
-  const totalBalance = Number((mainWalletBalance + lastKnownPuppetBalances).toFixed(4));
-  */
  const totalBalance = Number((await userManager.getBalFromAllAssociatedWallets_inSol(user)).toFixed(4));
     
   let volumeBoosterText = `${c.icons.goblet} Rank Booster ${c.icons.goblet}
@@ -312,30 +287,3 @@ ${c.icons.cashBankHouse} Unique makers: ${existingBooster?.metrics.uniqueWallets
     await h.tryEditOrReply(ctx, volumeBoosterText, keyboard);
   return;
 }
-
-
-
-
-
-/*
-async function junkPile(ctx: Context, boosterID?: string) {
-  const booster = Booster.getBoosterDataBy(boosterID);
-  if (!booster) {
-    tryReply(ctx, 'Booster not found');
-    return;
-  } else if (booster.ownerTgID !== String(senderID)) {
-    tryReply(ctx, 'You are not the owner of this booster');
-    return;
-  }
-
-  // show stats
-  let text = `Boosting for <code>${booster.tokenAddress.toBase58()}</code>
-Deposited amount: ${booster.metrics.initialDeposit} SOL
-Remaining amount: ${booster.metrics.lastKnownSolBal || 'N/A'} SOL
-Gas & rent: ${booster.metrics.gasSpent} SOL
-Buy volume generated: ${booster.metrics.buyVolume} SOL
-Sell volume generated: ${booster.metrics.sellVolume} SOL
-Number of unique holders: ${booster.metrics.totalHolders || 1} holder(s)
-`;
-}
-*/
