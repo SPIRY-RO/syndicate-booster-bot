@@ -73,8 +73,14 @@ ${c.icons.people} Volume will come from ${settings.volumeParallelWallets} wallet
 
 ${c.icons.cashBag} Your balance(including puppet-wallets) ${totalBalance} SOL
 
-The fewer wallets you use - the more volume you get for your $ and the less you lose on gas per transaction.
-The more wallets - the more organic the transactions will appear.
+⫸ DEBUGS / SELF DIAGNOSTICS / TIPS ⫷
+${c.icons.star} START/STOP IF YOU WANT TO CHANGE SETTINGS
+${c.icons.star} START/STOP IF THE BOT DOESN'T PUSH ALL TRANSACTIONS 
+(ITS DUE TO JITO VALIDATORS + NETWORK CONGESTION)
+${c.icons.star} WHEN RE-STARTED IF GIVES ERROR OF BALANCE JUST TOP-UP WITH 0.05 AS HE DIDN'T DRAINED THE PUPPET WALLETS ON-TIME.
+${c.icons.star} THE FEWER WALLET YOU USE - THE MORE VOLUME ON YOUR BURNED SOL YOU GET.
+${c.icons.star} THE MORE WALLET - THE MORE ORGANIC THE TRANSACTIONS WILL APPEAR.
+
 
 ${c.icons.chartBars} Volume generated:
 Buys: ${existingBooster?.metrics?.buyVolume.toFixed(3) || 'N/A'} SOL | sells: ${existingBooster?.metrics?.sellVolume?.toFixed(3) || 'N/A'} SOL
