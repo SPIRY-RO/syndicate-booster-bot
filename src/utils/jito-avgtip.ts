@@ -22,7 +22,7 @@ async function getAverageJitoTip(): Promise<number> {
 
     if (Array.isArray(data) && data.length > 0) {
       const tipData = data[0];
-      const averageTip = (tipData.landed_tips_50th_percentile);
+      const averageTip = (tipData.ema_landed_tips_50th_percentile + tipData.landed_tips_25th_percentile);
 
       console.log(`[jito::average_tip] Calculated average tip: ${averageTip} SOL`);
 

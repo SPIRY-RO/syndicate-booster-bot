@@ -29,11 +29,19 @@ class PuppetVolume extends PuppetBase {
         }
         let success = false;
         while (!success) {
+          if (this._hasReasonToStop()) {
+            h.debug(`${this.tag} found reason to stop during atomic transaction; breaking retry loop...`);
+            break;
+          }
           success = await this.doAtomicTx(lastTokenBalance);
           if (!success) {
             console.log(`${this.tag} Atomic transaction failed. Retrying...`);
             await h.sleep(1000); // Retry after 1 second
           }
+        }
+        if (this._hasReasonToStop()) {
+          h.debug(`${this.tag} found reason to stop after atomic transaction; breaking main loop...`);
+          break;
         }
         const { balance: newBalance } = await sh.waitForBalanceChange(this.lastBalance, this.address);
         this.lastBalance = newBalance as number;
@@ -49,6 +57,10 @@ class PuppetVolume extends PuppetBase {
   }
 
   async doAtomicTx(existingTokens_inSol: number = 0): Promise<boolean> {
+    if (this._hasReasonToStop()) {
+      h.debug(`${this.tag} found reason to stop before starting atomic transaction; aborting...`);
+      return false;
+    }
     const fromAmountSol = Number(this.lastBalance) - c.RESERVED_PUPPET_BALANCE;
     const fromAmount_forBuy1 = h.roundDown(fromAmountSol / 100 * h.getRandomNumber(25, 75), 9);
     const fromAmount_forBuy2 = h.roundDown(fromAmountSol - fromAmount_forBuy1, 9);
