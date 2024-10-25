@@ -112,8 +112,10 @@ async function workMenu(ctx: any, onlyRefresh = false) {
 
   const text = `⫸ MAIN MENU ⫷
 
-${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
+${c.icons.moonWhite} CA : <code>${settings.selectedTokenAddr}</code>
 ${c.icons.moonWhite} TOKEN NAME : <code>${tokenInfo.tokenName}</code>
+${c.icons.moonWhite} TOKEN SYMBOL : <code>${tokenInfo.tokenSymbol}</code>
+
 
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL

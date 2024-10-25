@@ -31,7 +31,7 @@ export async function makeAndSendJitoBundle(
   if (!tipOverride_inLamps)
     // tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
     // tipOverride_inLamps = floatToLamports(0.0025);
-    tipOverride_inLamps = floatToLamports(averageJitoTip);
+    tipOverride_inLamps = floatToLamports(averageJitoTip)*1.25;
 
   try {
     //const txNum = Math.ceil(txs.length / 3);

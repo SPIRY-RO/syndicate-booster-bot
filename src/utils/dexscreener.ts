@@ -3,6 +3,7 @@ import axios from "axios";
 interface TokenInfo {
   tokenName: string;
   tokenSymbol: string;
+
 }
 
 export async function getDexscreenerTokenInfo(tokenAddress: string): Promise<TokenInfo | null> {
@@ -39,6 +40,7 @@ export async function getDexscreenerTokenInfo(tokenAddress: string): Promise<Tok
     return {
       tokenName: actualToken.name,
       tokenSymbol: actualToken.symbol,
+      
     };
   } catch (error) {
     console.error("Error fetching token data:", error);
