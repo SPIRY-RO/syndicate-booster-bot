@@ -22,7 +22,7 @@ async function getAverageJitoTip(): Promise<number> {
 
     if (Array.isArray(data) && data.length > 0) {
       const tipData = data[0];
-      const averageTip = (tipData.landed_tips_75th_percentile - tipData.ema_landed_tips_50th_percentile) / 0.5;
+      const averageTip = (tipData.landed_tips_75th_percentile - tipData.ema_landed_tips_50th_percentile) / 0.75;
 
       console.log(`[jito::average_tip] Calculated average tip: ${averageTip} SOL`);
 
@@ -52,6 +52,6 @@ export async function initJitoAverageTipLoop() {
     if (newAverageTip !== averageJitoTip) {
       averageJitoTip = newAverageTip;
     }
-    await sleep(1000 * 10 * 1); // Sleep for 10 seconds.
+    await sleep(1000 * 1 * 1); // Sleep for 1 second.
   }
 }
