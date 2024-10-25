@@ -1,3 +1,4 @@
+
 import * as solana from '@solana/web3.js';
 import bs58 from 'bs58';
 
@@ -99,36 +100,49 @@ async function workMenu(ctx: any, onlyRefresh = false) {
   const settings = await userManager.getOrCreateSettingsFor(ctx.from.id);
   const balanceLamps = await web3Connection.getBalance(h.keypairFrom(user.workWalletPrivKey).publicKey);
   const balanceSol = balanceLamps / solana.LAMPORTS_PER_SOL;
-
+  //const tokenData = await web3.getParsedAccountInfo(new solana.PublicKey(settings.selectedTokenAddr));
+  const tokenInfo = await getDexscreenerTokenInfo(settings.selectedTokenAddr);
+  if (!tokenInfo) {
+    await h.tryReply(ctx, `Could not fetch token info for ${settings.selectedTokenAddr}`);
+    return;
+  }
   if (!settings.selectedTokenAddr) {
     return ctx.scene.enter(wizardSetAddr_name, {});
-  }
-
-  // Fetch token details
-  const tokenInfo = await getDexscreenerTokenInfo(settings.selectedTokenAddr);
-  let tokenDetails = "";
-  if (tokenInfo) {
-    tokenDetails = `${c.icons.moonWhite} TOKEN NAME : <b>${tokenInfo.tokenName}</b>\n${c.icons.moonWhite} TOKEN SYMBOL : <b>${tokenInfo.tokenSymbol}</b>\n`;
-  } else {
-    tokenDetails = `${c.icons.moonWhite} TOKEN NAME : <b>Unknown</b>\n${c.icons.moonWhite} TOKEN SYMBOL : <b>Unknown</b>\n`;
   }
 
   const text = `⫸ MAIN MENU ⫷
 
 ${c.icons.moonWhite} TOKEN CONTRACT : <code>${settings.selectedTokenAddr}</code>
-${tokenDetails}
+${c.icons.moonWhite} TOKEN NAME : <code>${tokenInfo.tokenName}</code>
+
 ${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 ${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
 ${c.icons.cashBankHouse} YOUR WALLET ADDRESS : <code>${h.keypairFrom(user.workWalletPrivKey).publicKey.toBase58()}</code>
 
+
+
 ⫸ "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
 
 ⫸ "${c.icons.lock} RENT BOOSTER" TO RENT THE BOT AND START
+
+⫸ "${c.icons.chartBars} BOOST VOLUME" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN VOLUME HERE.
+
+⫸ "${c.icons.cup} BOOST RANK" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN RANK HERE.
+
+⫸ "${c.icons.bag} BOOST HOLDERS" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN HOLDERS HERE.
+
+
+
+
+If any inquiries don't hesitate to reach us directly.
 `;
 
-  await h.tryReply(ctx, text);
+  if (onlyRefresh)
+    await h.tryEdit(ctx, text, { reply_markup: workMenuKeyboard, ...DEF_MESSAGE_OPTS });
+  else
+    await h.tryEditOrReply(ctx, text, { reply_markup: workMenuKeyboard, ...DEF_MESSAGE_OPTS });
+  return;
 }
-
 export async function showWelcomeMessage(ctx: Context) {
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
