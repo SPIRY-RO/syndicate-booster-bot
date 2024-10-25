@@ -30,7 +30,7 @@ export const JUPITER_API_URL = 'http://169.197.85.114:7676'; // self-hosted
 export const JITO_BUNDLE_CHECK_TIMEOUT = 15 * 1000; // check new bundle status this often
 export const JITO_STATUS_CHECK_INTERVAL = 1 * 1000; // check new bundle status this often
 
-export const BALANCE_CHANGE_CHECK_TIMEOUT = 2 * 1000; // check balance change this often// 10 seconds
+export const BALANCE_CHANGE_CHECK_TIMEOUT = 5 * 1000; // check balance change this often// 5 seconds
 export const JITO_BUNDLE_TIMEOUT = 15 * 1000; //  10 seconds
 //export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 5; // for regular keys
 export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 50; // for our special key
@@ -43,8 +43,8 @@ export const SOCIALS = {
 
 
 export const WSOL_MINT_ADDR = "So11111111111111111111111111111111111111112";
-export const DEFAULT_SOLANA_FEE_IN_LAMPS = 10000;
-export const SWAP_PRIORITY_FEE_IN_LAMPS = 20001;
+export const DEFAULT_SOLANA_FEE_IN_LAMPS = 5000;
+export const SWAP_PRIORITY_FEE_IN_LAMPS = 10001;
 export const SWAP_SLIPPAGE_PERCENT = 2;
 // total gas = cu * price1cu
 export const DEFAULT_uLAMPS_PER_CU = 50000; // lamports per compute-unit; default Solana value

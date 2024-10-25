@@ -36,7 +36,7 @@ class PuppetVolume extends PuppetBase {
           success = await this.doAtomicTx(lastTokenBalance);
           if (!success) {
             console.log(`${this.tag} Atomic transaction failed. Retrying...`);
-            await h.sleep(1000); // Retry after 1 second
+            await h.sleep(5000); // Retry after 1 second
           }
         }
         if (this._hasReasonToStop()) {
