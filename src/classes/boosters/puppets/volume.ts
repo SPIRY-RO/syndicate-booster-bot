@@ -56,7 +56,8 @@ class PuppetVolume extends PuppetBase {
     }
   }
 
-  async doAtomicTx(existingTokens_inSol: number = 0): Promise<boolean> {
+  async doAtomicTx(existingTokens_inSol: number = 0, retries = 0): Promise<boolean> {
+    const maxRetries = 3;
     if (this._hasReasonToStop()) {
       h.debug(`${this.tag} found reason to stop before starting atomic transaction; aborting...`);
       return false;
@@ -85,8 +86,14 @@ class PuppetVolume extends PuppetBase {
       m.txs += 3;
       m.buys += 2; m.buyVolume += fromAmountSol;
       m.sells += 1; m.sellVolume += sell.estimates.amountOut_inSol;
+      return true;
+    } else {
+      if (retries >= maxRetries) {
+        return false; // Indicate failure after max retries
+      } else {
+        return await this.doAtomicTx(existingTokens_inSol, retries + 1); // Retry
+      }
     }
-    return success;
   }
 
   protected _hasReasonToStop(): boolean {
