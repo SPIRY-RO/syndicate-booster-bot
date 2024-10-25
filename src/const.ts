@@ -12,26 +12,26 @@ export const MIN_NEW_PUPPET_BUDGET = EMPTY_PUPPET_BALANCE_THRESHOLD + 0.002;
 export const REFERRAL_FEE_PERC = 20;
 export const MIN_REF_CLAIM_AMOUNT_SOL = envConf.TEST_MODE ? 0.001 : 0.01;
 
-export const NEW_BOOSTER_BALANCE_CHECK_INTERVAL = envConf.TEST_MODE ? 5 * 1000 : 30 * 1000;
-export const NEW_BOOSTER_BALANCE_CHECK_HARD_TIMEOUT = 4 * 60 * 60 * 1000;
+export const NEW_BOOSTER_BALANCE_CHECK_INTERVAL = envConf.TEST_MODE ? 5 * 1000 : 30 * 1000;// 30 seconds
+export const NEW_BOOSTER_BALANCE_CHECK_HARD_TIMEOUT = 4 * 60 * 60 * 1000;// 4 hours
 export const NEW_BOOSTER_MIN_ACCEPTED_BALANCE_SOL = envConf.TEST_MODE ? 0.05 : 0.25;
 export const SAVED_BOOSTER_START_DELAY = envConf.TEST_MODE ? 2 * 1000 : 30 * 1000;
 
-export const BOOSTER_TOP_GEAR = 5;
-export const MAX_HOLDERS_PER_BOOSTER = 5000;
-export const HOLDER_INCREMENT_STEP = 250;
+export const BOOSTER_TOP_GEAR = 5;// 5x
+export const MAX_HOLDERS_PER_BOOSTER = 5000;// 5000
+export const HOLDER_INCREMENT_STEP = 250;// 250
 
-export const POOL_UPDATE_INTERVAL = 1200 * 1000;
+export const POOL_UPDATE_INTERVAL = 1200 * 1000;// 20 minutes
 export const POOL_DATA_LARGE_URL = "https://api.raydium.io/v2/sdk/liquidity/mainnet.json";
 
 export const JUPITER_API_URL = 'http://169.197.85.114:7676'; // self-hosted
 //export const JUPITER_API_URL = 'https://quote-api.jup.ag/v6'; // public
 
-export const JITO_BUNDLE_CHECK_TIMEOUT = 5 * 1000;
+export const JITO_BUNDLE_CHECK_TIMEOUT = 5 * 1000; // check new bundle status this often
 export const JITO_STATUS_CHECK_INTERVAL = 1 * 1000; // check new bundle status this often
 
-export const BALANCE_CHANGE_CHECK_TIMEOUT = 10 * 1000;
-export const JITO_BUNDLE_TIMEOUT = 10 * 1000;
+export const BALANCE_CHANGE_CHECK_TIMEOUT = 5 * 1000; // check balance change this often// 10 seconds
+export const JITO_BUNDLE_TIMEOUT = 5 * 1000; //  10 seconds
 //export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 5; // for regular keys
 export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 50; // for our special key
 export const JITO_MAX_BUNDLE_IDS_PER_STATUS_CHECK = 5;

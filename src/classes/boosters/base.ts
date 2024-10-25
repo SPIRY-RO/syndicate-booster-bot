@@ -9,6 +9,7 @@ import { prisma } from '../..';
 import PuppetBase from './puppets/base';
 import { DEF_MESSAGE_OPTS } from '../../config';
 import { makeAndSendJitoBundle } from '../../utils/jito';
+import { getDexscreenerTokenInfo } from "../../utils/dexscreener";
 
 const allActiveBoosters: BoosterBase[] = [];
 
@@ -155,6 +156,15 @@ class BoosterBase {
       const tokenBalance = (await sh.getTokenAccBalance(this.tokenAccAddr)).uiAmount!;
       const hasSubstantialTokenHoldings = ((await sh.getTokenValueInSol(tokenBalance, this.tokenAddr)) >= 0.003);
       h.debug(`${this.tag} has substantial token holdings? ${hasSubstantialTokenHoldings}`);
+      
+      // Fetch token details
+      const tokenInfo = await getDexscreenerTokenInfo(this.tokenAddr.toBase58());
+      if (tokenInfo) {
+        h.debug(`Token Name: ${tokenInfo.tokenName}, Token Symbol: ${tokenInfo.tokenSymbol}`);
+      } else {
+        h.debug(`Failed to fetch token details for ${this.tokenAddr.toBase58()}`);
+      }
+
       if (hasSubstantialTokenHoldings) {
         h.debug(`${this.tag} trying to sell our existing tokens`);
         const tx = (await sh.getSwapTx(this.keypair, this.tokenAddr, c.WSOL_MINT_ADDR, tokenBalance))?.tx;
