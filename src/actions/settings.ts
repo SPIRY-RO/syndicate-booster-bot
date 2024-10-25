@@ -388,11 +388,11 @@ const changeMakerFrequencyKeyboard = {
       },
       {
         text: `80`,
-        callback_data: `data-settings-makers-40`,
+        callback_data: `data-settings-makers-80`,
       },
       {
         text: `100`,
-        callback_data: `data-settings-makers-40`,
+        callback_data: `data-settings-makers-100`,
       },
     ],
 
