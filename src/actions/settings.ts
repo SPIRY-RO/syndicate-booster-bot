@@ -304,6 +304,20 @@ const rankParallelWalletsKeyboard = {
         callback_data: `data-settings-parallelRank-20`,
       },
     ],
+    [
+      {
+        text: `30`,
+        callback_data: `data-settings-parallelRank-10`,
+      },
+      {
+        text: `45`,
+        callback_data: `data-settings-parallelRank-15`,
+      },
+      {
+        text: `50`,
+        callback_data: `data-settings-parallelRank-20`,
+      },
+    ],
 /*
     [
       {
