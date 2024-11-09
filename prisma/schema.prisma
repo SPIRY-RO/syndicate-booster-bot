@@ -39,6 +39,8 @@ model User {
   workWalletPubkey      String
   withdrawWalletAddr    String @default("")
   rentExpiresAt         Int @default(0)
+  isSendingRentNow      Boolean @default(false)
+  refFeePerc            Int @default(10)
   referredByTgID        String @default("")
   totalRefRewards       Float    @default(0.0)
   lastPuppetPKs         String[] @default([])
@@ -56,4 +58,5 @@ model Settings {
   holdersNewHolders     Int @default(500)
   rankParallelWallets   Int @default(10)
   rankRotateEveryNTx    Int @default(40)
+  jitoTip               String @default("0")
 }

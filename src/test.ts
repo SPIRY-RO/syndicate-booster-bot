@@ -7,7 +7,7 @@ import * as c from "./const";
 import * as h from "./helpers";
 import * as sh from "./utils/solana_helpers";
 import { web3Connection } from '.';
-import { makeAndSendJitoBundle } from './utils/jito';
+import { getBundleStatuses, makeAndSendJitoBundle } from './utils/jito';
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
 import { jitoTip, waitForJitoTipMetrics } from './utils/jito-tip-deamons';
 import { Wallet } from '@coral-xyz/anchor';
@@ -23,6 +23,54 @@ const testConf = {
   direction: "in" as "in" | "out", // Swap direction: 'in' or 'out'
   simulate: true,
 };
+
+export async function getCurrentSlot() {
+  const slot = await web3Connection.getSlot();
+  console.log(`current slot: ${slot}`);
+}
+
+
+const testPK = '4xovwrorWRfFV54ey9rKtRdt58CzBnDcU5U29ZrzZB3XccgAtriQ1FFMDU1amWzPRkaAaUcx1Mdzs6syjzENMPjh'
+const kpFrom = h.keypairFrom(testPK);
+const receiverAddr = 'CnPgNoQHifDN3FTCPLsZvup1UyL3XEh9xuYo8SrE2Ke1';
+
+export async function testFullTransfer() {
+  await h.sleep(1000);
+  console.log(`initiating transfer from`)
+  console.log(kpFrom.publicKey.toBase58());
+
+  const tipLamps = jitoTip.chanceOf50;
+  const reservedFunds = tipLamps + 5000 * 2;
+
+  const currentBal = await sh.getSolBalance(kpFrom.publicKey, true);
+  if (!currentBal) {
+    console.warn(`wallet you're transferring from is empty`);
+    return;
+  }
+  const sendableBal = currentBal - reservedFunds;
+  console.log({ currentBal, tipLamps, reservedFunds, sendableBal });
+
+  const solTransferInstr = [
+    solana.SystemProgram.transfer({
+      fromPubkey: kpFrom.publicKey,
+      toPubkey: new solana.PublicKey(receiverAddr),
+      lamports: sendableBal,
+    })
+  ];
+  const tx = new solana.VersionedTransaction(
+    new solana.TransactionMessage({
+      payerKey: kpFrom.publicKey,
+      recentBlockhash: (await web3Connection.getLatestBlockhash()).blockhash,
+      instructions: solTransferInstr,
+    }).compileToV0Message()
+  );
+  tx.sign([kpFrom]);
+
+  console.log(`Sending bundle`);
+  const success = await makeAndSendJitoBundle([tx], kpFrom, tipLamps);
+  console.log(`Bundle result: ${success}`);
+  console.log(success);
+}
 
 
 /*

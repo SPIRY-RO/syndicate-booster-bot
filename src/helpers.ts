@@ -367,6 +367,10 @@ export function timingNotationToSeconds(notation: string) {
       totalTime += figure * 3600
     else if (unit == 'd')
       totalTime += figure * 3600 * 24
+    /* unused
+    else if (unit == 'w')
+      totalTime += figure * 3600 * 24 * 7
+    */
   }
   return totalTime
 }
@@ -412,11 +416,16 @@ export function getCarFor(speed: number | string) {
 }
 
 export async function getUserProfileLinkFrom(userID: number | string) {
-  const userData = await telegraf.telegram.getChat(userID) as any;
-  let displayName = escapeHTML(userData.first_name + ' ' + (userData.last_name || ''));
-  if (userData.username)
-    displayName = '@' + userData.username;
-  return `<a href=\"tg://user?id=${userID}\">${displayName}</a>`;
+  try {
+    const userData = await telegraf.telegram.getChat(userID) as any;
+    let displayName = escapeHTML(userData.first_name + ' ' + (userData.last_name || ''));
+    if (userData.username)
+      displayName = '@' + userData.username;
+    return `<a href=\"tg://user?id=${userID}\">${displayName}</a>`;
+  } catch (e: any) {
+    console.warn(`failed to get profile link for ${userID}; reason: ${e}`);
+    return "<i>(N/A: this user never interacted with the bot)</i>";
+  }
 }
 
 export function incrementByPercent(number: number, percentage: number): number {

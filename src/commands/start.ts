@@ -9,16 +9,20 @@ import * as h from "../helpers";
 import { showHelpMessage } from "./help";
 import { wizardSetAddr_name } from '../scenes/set-active-address';
 import { Context } from 'telegraf';
-import { getDexscreenerTokenInfo } from "../utils/dexscreener";
+import { isUnderMaintenance, notifyAboutMaintenance } from './admin';
+
 
 const workMenuKeyboard = {
   inline_keyboard: [
     [
       {
-        text: `${c.icons.lock} RENT BOOSTER`,
+        text: `${c.icons.lock} Unlock usage`,
         callback_data: `show_rent`,
       },
-
+      {
+        text: `${c.icons.cashBankHouse} My wallet`,
+        callback_data: `wallet`,
+      },
     ],
     /*
     [
@@ -30,37 +34,31 @@ const workMenuKeyboard = {
     */
     [
       {
-        text: `${c.icons.chartBars} BOOST VOLUME `,
+        text: `${c.icons.chartBars} Boost volume`,
         callback_data: `data-boosterShow-volume`,
       },
       {
-        text: `${c.icons.cup} BOOST RANK`,
+        text: `${c.icons.cup} Boost rank`,
         callback_data: `data-boosterShow-rank`,
       },
       {
-        text: `${c.icons.bag} BOOST HOLDERS`,
+        text: `${c.icons.bag} Boost holders`,
         callback_data: `data-boosterShow-holders`,
       },
     ],
     [
       {
-        text: `${c.icons.handshake}REFERRALS - EARN $$$$`,
+        text: `${c.icons.handshake} Referrals`,
         callback_data: `referrals`,
       },
       {
-        text: `${c.icons.refresh} REFRESH DATA`,
+        text: `${c.icons.refresh} Refresh`,
         callback_data: `work_menu_refresh`
       },
     ],
     [
-    {
-      text: `${c.icons.cashBankHouse} WALLET`,
-      callback_data: `wallet`,
-    }
-  ],
-    [
       {
-        text: `${c.icons.write}CHANGE CONTRACT ADDRESS`,
+        text: `${c.icons.write} Change token address`,
         callback_data: `token_address_wizard`,
       },
     ],
@@ -69,12 +67,12 @@ const workMenuKeyboard = {
 
 export const workMenuBackButtonKeyboard = {
   inline_keyboard: [[{
-    text: `${c.icons.backArrow} MAIN MENU`,
+    text: `${c.icons.stupidFuckingHouse} Main menu`,
     callback_data: `work_menu`,
   }]]
 };
 export const workMenuBackButton = {
-  text: `${c.icons.backArrow} MAIN MENU`,
+  text: `${c.icons.stupidFuckingHouse} Main menu`,
   callback_data: `work_menu`,
 };
 
@@ -89,54 +87,35 @@ export async function showWorkMenu(ctx: any) {
   if (!isPMs) {
     await h.tryReply(ctx, `This command is intended for use in PMs`);
     return;
-  } 
+  }
   return workMenu(ctx, false);
 }
 
 async function workMenu(ctx: any, onlyRefresh = false) {
-  h.answerCbQuerySafe(ctx);
-
   const user = await userManager.getOrCreateUser(ctx.from.id);
-  const settings = await userManager.getOrCreateSettingsFor(ctx.from.id);
-  const balanceLamps = await web3Connection.getBalance(h.keypairFrom(user.workWalletPrivKey).publicKey);
-  const balanceSol = balanceLamps / solana.LAMPORTS_PER_SOL;
-  //const tokenData = await web3.getParsedAccountInfo(new solana.PublicKey(settings.selectedTokenAddr));
-  const tokenInfo = await getDexscreenerTokenInfo(settings.selectedTokenAddr);
-  if (!tokenInfo) {
-    await h.tryReply(ctx, `Could not fetch token info for ${settings.selectedTokenAddr}`);
+  if (isUnderMaintenance() && !user.isBotAdmin) {
+    await notifyAboutMaintenance(ctx);
     return;
   }
+
+  const settings = await userManager.getOrCreateSettingsFor(ctx.from.id);
   if (!settings.selectedTokenAddr) {
+    h.answerCbQuerySafe(ctx);
     return ctx.scene.enter(wizardSetAddr_name, {});
   }
+  const balance = await userManager.getTotalUserBalance(user);
+  h.answerCbQuerySafe(ctx);
 
-  const text = `⫸ MAIN MENU ⫷
+  const text = `${c.icons.rocket}${c.icons.chartBars} Main menu ${c.icons.chartBars}${c.icons.rocket}
 
-${c.icons.moonWhite} CA : <code>${settings.selectedTokenAddr}</code>
-${c.icons.moonWhite} TOKEN NAME : <code>${tokenInfo.tokenName}</code>
-${c.icons.moonWhite} TOKEN SYMBOL : <code>${tokenInfo.tokenSymbol}</code>
+${c.icons.moonWhite} Token: <code>${settings.selectedTokenAddr}</code>
 
+${c.icons.clockRed} Rent time left: <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
 
-${c.icons.clockRed} RENT TIME LEFT : <b>${h.secondsToTimingNotation((user.rentExpiresAt - Date.now()) / 1000)}</b>
-${c.icons.cashBanknote} BALANCE : <b>${balanceSol < c.MIN_BOOSTER_BALANCE_SOL ? 'empty' : `${balanceSol.toFixed(4)}`}</b> SOL
-${c.icons.cashBankHouse} YOUR WALLET ADDRESS : <code>${h.keypairFrom(user.workWalletPrivKey).publicKey.toBase58()}</code>
+${c.icons.cashBanknote} ${balance.formattedText}
 
-
-
-⫸ "${c.icons.cashBankHouse} MY WALLET" TO DEPOSIT AND WITHDRAW FUNDS.
-
-⫸ "${c.icons.lock} RENT BOOSTER" TO RENT THE BOT AND START
-
-⫸ "${c.icons.chartBars} BOOST VOLUME" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN VOLUME HERE.
-
-⫸ "${c.icons.cup} BOOST RANK" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN RANK HERE.
-
-⫸ "${c.icons.bag} BOOST HOLDERS" AFTER BOT WAS RENTED, YOU CAN START BOOSTING YOUR TOKEN HOLDERS HERE.
-
-
-
-
-If any inquiries don't hesitate to reach us directly.
+Go to "${c.icons.cashBankHouse} My wallet" to deposit or withdraw funds.
+Press "${c.icons.lock} Unlock usage" once you're ready to boost your project.
 `;
 
   if (onlyRefresh)
@@ -145,6 +124,27 @@ If any inquiries don't hesitate to reach us directly.
     await h.tryEditOrReply(ctx, text, { reply_markup: workMenuKeyboard, ...DEF_MESSAGE_OPTS });
   return;
 }
+
+
+
+
+/* Start message */
+
+const startMessage = `
+${c.icons.rocket}${c.icons.chartBars} Welcome to the SolPages PageMaker Volume Bot ${c.icons.chartBars}${c.icons.rocket}
+
+We are here to provide you the best Volume Boosting Bot on Solana
+
+${c.icons.flame} Optimised Volume Conversion 
+${c.icons.racecar} Variable Speeds
+${c.icons.alienHappy} Integrated Anti MEV-mode
+${c.icons.chartUpRed} Natural Volume Mode for Investor Confidence
+
+${c.icons.chainLink} Contact the SolPage Team - @solpagestoken_portal
+
+To start click "${c.icons.moonWhite} Enter Token Address ${c.icons.moonWhite}" button below.
+`;
+
 export async function showWelcomeMessage(ctx: Context) {
   h.answerCbQuerySafe(ctx);
   const isPMs = (ctx.chat?.type === "private");
@@ -152,58 +152,41 @@ export async function showWelcomeMessage(ctx: Context) {
     await h.tryReply(ctx, `This command is intended for use in PMs`);
     return;
   }
-  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id);
 
-  // Send the image banner only once
+  const user = await userManager.getOrCreateUser(ctx.from?.id);
+  if (isUnderMaintenance() && !user.isBotAdmin) {
+    await notifyAboutMaintenance(ctx);
+    return;
+  }
 
-
-  /* Start message */
-  const startMessage = `
-
-${c.icons.star} SYNDICATE BOOSTING BOT ${c.icons.star}
-
-We are here to provide you the best Volume Boosting Bot on Solana
-
-${c.icons.flame} Efficient Volume Handling ${c.icons.flame}
-- Maximize the impact of every trade with a system designed to manage volume smoothly and effectively.
-
-${c.icons.sprout} Organic Volume Module ${c.icons.sprout}
-- Create a consistent and reliable trading volume that attracts investors and builds long-term market trust.
-
-${c.icons.shield} Anti MEV-Protection ${c.icons.shield}
-- Protect your trades with built-in defense against MEV exploitation.
-
-${c.icons.chainLink} FOR SUPPORT & SALES CONTACT @SpiryBTC OR @dukuweb3 
-`;
-
+  const userSettings = await userManager.getOrCreateSettingsFor(ctx.from?.id)
   const keyboard = [
     [{
-      text: `${c.icons.green} START HERE - ENTER TOKEN CONTRACT ADDRESS`,
+      text: `${c.icons.moonWhite} Enter token address ${c.icons.moonWhite}`,
       callback_data: `token_address_wizard`,
-    }],
-    [{
-      text: `${c.icons.cashBankHouse} WALLET`,
-      callback_data: `wallet`,
-    }],
-    [{
-      text: `${c.icons.handshake} REFERRAL PROGRAM / EARN $$$ `,
-      callback_data: `referrals`,
-    }],
+    }]
   ];
 
   if (userSettings.selectedTokenAddr) {
     keyboard.push([{
-      text: `${c.icons.diskette} PREVIOUS TOKEN -  / MAIN MENU`,
+      text: `${c.icons.diskette} Use previous address ${c.icons.diskette}`,
       callback_data: `work_menu`,
     }]);
   }
 
-  await h.tryEditOrReply(ctx, startMessage, {
-    reply_markup: {
-      inline_keyboard: keyboard,
-    },
-  });
-  return;
+  try {
+    ctx.replyWithPhoto(
+      { source: 'src/assets/intro_image.jpg' },
+      {
+        caption: startMessage,
+        reply_markup: {
+          inline_keyboard: keyboard,
+        }
+      });
+
+  } catch (e: any) {
+    console.error(`error when posting start message: ${e}`);
+  }
 }
 
 

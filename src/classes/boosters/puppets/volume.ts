@@ -54,14 +54,17 @@ class PuppetVolume extends PuppetBase {
     const fromAmountSol = Number(this.lastBalance) - c.RESERVED_PUPPET_BALANCE;
     const fromAmount_forBuy1 = h.roundDown(fromAmountSol / 100 * h.getRandomNumber(25, 75), 9);
     const fromAmount_forBuy2 = h.roundDown(fromAmountSol - fromAmount_forBuy1, 9);
-    const buy1 = await sh.getSwapTx(this.keypair, c.WSOL_MINT_ADDR, this.booster.tokenAddr, fromAmount_forBuy1);
-    const buy2 = await sh.getSwapTx(this.keypair, c.WSOL_MINT_ADDR, this.booster.tokenAddr, fromAmount_forBuy2);
+    const buy1 = await sh.getSwapTx(
+      this.keypair, c.WSOL_MINT_ADDR, this.booster.tokenAddr, fromAmount_forBuy1, c.SWAP_SLIPPAGE_PERCENT_FOR_VOLUME);
+    const buy2 = await sh.getSwapTx(
+      this.keypair, c.WSOL_MINT_ADDR, this.booster.tokenAddr, fromAmount_forBuy2, c.SWAP_SLIPPAGE_PERCENT_FOR_VOLUME);
     if (!buy1 || !buy2) {
       h.debug(`${this.tag} failed to build one of buy TXs in volume booster; not continuing`);
       return false;
     }
     const minAmountOut = buy1.estimates.minAmountOut_inSol + buy2.estimates.minAmountOut_inSol + existingTokens_inSol;
-    const sell = await sh.getSwapTx(this.keypair, this.booster.tokenAddr, c.WSOL_MINT_ADDR, minAmountOut);
+    const sell = await sh.getSwapTx(
+      this.keypair, this.booster.tokenAddr, c.WSOL_MINT_ADDR, minAmountOut, c.SWAP_SLIPPAGE_PERCENT_FOR_VOLUME);
     if (!sell) {
       h.debug(`${this.tag} failed to build sell TX in volume booster; not continuing`);
       return false;

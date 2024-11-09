@@ -228,3 +228,4 @@ interface JitoBundle {
   transactions: string[];
   landedTipLamports: number;
 }
+

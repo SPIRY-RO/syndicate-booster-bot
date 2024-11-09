@@ -37,14 +37,15 @@ export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 50; // for our special key
 export const JITO_MAX_BUNDLE_IDS_PER_STATUS_CHECK = 5;
 
 export const SOCIALS = {
-  name: "Syndicate Volume Bot",
-  telegram: "",
+  name: "SolPages PageMaker Volume Bot",
+  telegram: "@solpagestoken_portal",
 };
 
 export const WSOL_MINT_ADDR = "So11111111111111111111111111111111111111112";
 export const DEFAULT_SOLANA_FEE_IN_LAMPS = 5000;
 export const SWAP_PRIORITY_FEE_IN_LAMPS = 10001;
 export const SWAP_SLIPPAGE_PERCENT = 1.5;
+export const SWAP_SLIPPAGE_PERCENT_FOR_VOLUME = 10;
 // total gas = cu * price1cu
 export const DEFAULT_uLAMPS_PER_CU = 50000; // lamports per compute-unit; default Solana value
 export const DEFAULT_NUM_OF_CU_PER_TX = 200000; // compute units per transaction; default Solana value

@@ -23,12 +23,15 @@ class BoosterHolders extends BoosterBase {
   async start(): Promise<void> {
     h.debug(`${this.tag} # starting up #`);
     this.startedAt = Date.now();
-    this.lastBalance = await sh.getSolBalance(this.keypair.publicKey) || this.lastBalance;
-    if (this.lastBalance === null || this.lastBalance == 0) {
-      console.error(`${this.tag} failed to fetch own balance when starting booster; aborting`);
+    const balance = await sh.getSolBalance(this.keypair.publicKey);
+    if (balance === null) {
+      console.error(`${this.tag} failed to fetch own balance when starting booster(${balance}); aborting`);
       this._cleanup();
       return;
+    } else {
+      h.debug(`${this.tag} balance at startup: ${balance} SOL`);
     }
+    this.lastBalance = balance;
 
     const inactivePuppetsEmptiedOK = await this.tryEmptyInactivePuppets();
     await this._sellPreviousTokenHoldings_ifExist();
@@ -48,6 +51,7 @@ If this error keeps coming up - contact our team`);
         break;
       }
       const success = await this.doAtomicTx();
+      this.refreshSettings();
       await this._waitBetweenBoosts();
     }
     await this._cleanup();
@@ -86,12 +90,15 @@ If this error keeps coming up - contact our team`);
         txs.push(tx);
       }
 
-      const success = await makeAndSendJitoBundle(txs, this.keypair);
+      const success = await makeAndSendJitoBundle(txs, this.keypair, this.settings.jitoTip);
       h.debug(`${this.tag} holders added successfully? ${success}`);
       if (success) {
+        this.metrics.txs += txs.length;
         this.metrics.buyVolume += this.newHolderBagInSol * txs.length;
         this.metrics.uniqueWallets += txs.length;
         this.lastBalance = (await sh.waitForBalanceChange(this.lastBalance, this.keypair.publicKey)).balance;
+      } else {
+        this.metrics.txsFailed += txs.length;
       }
     } catch (e: any) {
       console.error(`${this.tag} error when making atomic tx: ${e}`);
@@ -110,7 +117,7 @@ If this error keeps coming up - contact our team`);
       console.error(`${this.tag} failed to build swap TX for initial buy of tokens; aborting`);
       return false;
     }
-    const success = await makeAndSendJitoBundle([builtTx.tx], this.keypair);
+    const success = await makeAndSendJitoBundle([builtTx.tx], this.keypair, this.settings.jitoTip);
     if (!success) {
       console.error(`${this.tag} swap TX for initial buy of tokens failed`);
       return false;
@@ -131,7 +138,7 @@ If this error keeps coming up - contact our team`);
       h.debug(`${this.tag} waiting for ${delaySec}s...`);
     let remainingTime = delaySec * 1000;
     while (remainingTime > 5000) {
-      h.sleep(5000);
+      await h.sleep(5000);
       remainingTime -= 5000;
       if (this.wasAskedToStop)
         return;

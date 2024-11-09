@@ -11,10 +11,6 @@ const speedKeyboard = {
   inline_keyboard: [
     [
       {
-        text: `${c.icons.tractor} Super slow`,
-        callback_data: `data-settings-speed-0`,
-      },
-      {
         text: `${c.icons.tractor} Very slow`,
         callback_data: `data-settings-speed-1`,
       },
@@ -54,7 +50,7 @@ export async function showSpeedSettings(ctx: any) {
   const userID = String(ctx.from.id);
   const settings = await userManager.getOrCreateSettingsFor(userID);
 
-  await h.tryEditOrReply(ctx, `Volume Booster Speed
+  await h.tryEditOrReply(ctx, `Volume booster speed
 
 1 = ${h.getCarFor(1)} Very slow
 2 = ${h.getCarFor(2)} Slow
@@ -102,20 +98,6 @@ const durationKeyboard = {
       {
         text: `3 Hours`,
         callback_data: `data-settings-duration-10800`,
-      },
-    ],
-    [
-      {
-        text: `6 Hour`,
-        callback_data: `data-settings-duration-21600`,
-      },
-      {
-        text: `12 Hours`,
-        callback_data: `data-settings-duration-43200`,
-      },
-      {
-        text: `24 Hours`,
-        callback_data: `data-settings-duration-86400`,
       },
     ],
     [
@@ -176,10 +158,6 @@ const volumeParallelWalletsKeyboard = {
       {
         text: `4`,
         callback_data: `data-settings-parallelVolume-4`,
-      },
-      {
-        text: `5`,
-        callback_data: `data-settings-parallelVolume-5`,
       },
     ],
     [
@@ -304,20 +282,6 @@ const rankParallelWalletsKeyboard = {
         callback_data: `data-settings-parallelRank-20`,
       },
     ],
-    [
-      {
-        text: `30`,
-        callback_data: `data-settings-parallelRank-30`,
-      },
-      {
-        text: `45`,
-        callback_data: `data-settings-parallelRank-45`,
-      },
-      {
-        text: `50`,
-        callback_data: `data-settings-parallelRank-50`,
-      },
-    ],
 /*
     [
       {
@@ -386,16 +350,7 @@ const changeMakerFrequencyKeyboard = {
         text: `40`,
         callback_data: `data-settings-makers-40`,
       },
-      {
-        text: `80`,
-        callback_data: `data-settings-makers-80`,
-      },
-      {
-        text: `100`,
-        callback_data: `data-settings-makers-100`,
-      },
     ],
-
 /*
     [
       {

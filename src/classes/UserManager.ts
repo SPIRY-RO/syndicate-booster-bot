@@ -3,6 +3,7 @@ import bs58 from 'bs58';
 
 import { prisma, web3Connection } from "..";
 import * as h from "../helpers";
+import * as c from "../const";
 import * as sh from "../utils/solana_helpers";
 import { User } from '@prisma/client';
 
@@ -10,7 +11,9 @@ import { User } from '@prisma/client';
 class UserManager {
 
   private _unconditionalAdmins = [
-    476923989, // spiry
+    1847526983, // vik
+    309378400, // michael p
+    7271976123, // michael p dappst acc
   ]
 
 
@@ -28,6 +31,7 @@ class UserManager {
       create: {
         tgID: userID,
         isBotAdmin: shouldBeMadeAdmin,
+        refFeePerc: c.REFERRAL_FEE_PERC,
         workWalletPrivKey: bs58.encode(newKP.secretKey),
         workWalletPubkey: newKP.publicKey.toBase58(),
       }
@@ -81,7 +85,7 @@ class UserManager {
   }
 
 
-  async getBalFromAllAssociatedWallets_inSol(user?: User | null, userID?: string | number | null) {
+  async getTotalUserBalance(user?: User | null, userID?: string | number | null) {
     if (!userID && !user)
       throw SyntaxError(`At least one of the arguments [user, userID] needs to be supplied`);
     else if (userID && user)
@@ -91,19 +95,40 @@ class UserManager {
     if (!user)
       throw SyntaxError(`Inconsistency detected: unreachable code reached`);
 
-    const puppets = await prisma.puppet.findMany({where:{ownerTgID: user.tgID}});
+    const puppets = await prisma.puppet.findMany({ where: { ownerTgID: user.tgID } });
     const balancePromises: Promise<number | null>[] = [];
+    balancePromises.push(sh.getSolBalance(user.workWalletPubkey));
     for (const puppet of puppets) {
       balancePromises.push(sh.getSolBalance(puppet.pubKey));
     }
-    balancePromises.push(sh.getSolBalance(user.workWalletPubkey));
     const balances = await Promise.all(balancePromises);
-    let totalBalance = 0;
-    for (const b of balances) {
-      if (b)
-        totalBalance += b;
+    let totalBal = 0;
+    let masterBal = 0;
+    let puppetBal = 0;
+    for (let i = 0; i < balances.length; i++) {
+      const b = balances[i];
+      if (b) {
+        totalBal += b;
+        if (i == 0)
+          masterBal = b;
+        else
+          puppetBal += b;
+      }
     }
-    return totalBalance;
+    const precision = 4;
+    const balFmtd = {
+      total: Number(totalBal.toFixed(precision)),
+      master: Number(masterBal.toFixed(precision)),
+      puppet: Number(puppetBal.toFixed(precision)),
+      formattedText: `Balance: <b>empty</b>`,
+    };
+    if (balFmtd.total != balFmtd.master) {
+      balFmtd.formattedText = `Balance, main wallet: <b>${balFmtd.master}</b> SOL
+    + funds in puppet-wallets: <b>${balFmtd.puppet}</b> SOL`;
+    } else if (balFmtd.total > 0) {
+      balFmtd.formattedText = `Balance: <b>${balFmtd.total}</b> SOL`;
+    }
+    return balFmtd;
   }
 
 
@@ -142,6 +167,7 @@ class UserManager {
       },
       create: {
         tgID: userID,
+        refFeePerc: c.REFERRAL_FEE_PERC,
         isBotAdmin: true,
         workWalletPrivKey: bs58.encode(newKP.secretKey),
         workWalletPubkey: newKP.publicKey.toBase58(),

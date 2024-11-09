@@ -18,15 +18,17 @@ class BoosterRank extends BoosterBase {
   async start(): Promise<void> {
     h.debug(`${this.tag} # starting up #`);
     this.startedAt = Date.now();
-    this.lastBalance = await sh.getSolBalance(this.keypair.publicKey) || this.lastBalance;
-    if (this.lastBalance === null || this.lastBalance == 0) {
-      console.error(`${this.tag} failed to fetch own balance when starting booster; aborting`);
+    const balance = await sh.getSolBalance(this.keypair.publicKey);
+    if (balance === null) {
+      console.error(`${this.tag} failed to fetch own balance when starting booster(${balance}); aborting`);
       this._cleanup();
       return;
     }
+
+    this.lastBalance = balance;
     const tokenAcc = await sh.getTokenAcc(this.tokenAddr, this.keypair.publicKey)
     if (!tokenAcc?.pubkey) {
-      if (!await sh.ensureTokenAccountExists(this.keypair, this.tokenAddr)) {
+      if (!await sh.ensureTokenAccountExists(this.keypair, this.tokenAddr, this.settings.jitoTip)) {
         h.debug(`${this.tag} couldn't ensure that token account is open`);
       } else {
         h.debug(`${this.tag} opened token account that previously didn't exist`);
@@ -75,6 +77,7 @@ If this error keeps coming up - contact our team`);
         return false;
       }
       console.warn(`${this.tag} failed to fill newly-spawned puppet: ${h.getShortAddr(puppet.address)}; removing it and retrying with a new one`);
+      this.printOwnAndPuppetFreshBal(puppet.keypair.publicKey);
       return await this.spawnAndRunPuppet(budgetSol, skipBalanceCheck, retries + 1);
     }
 

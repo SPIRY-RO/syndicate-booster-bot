@@ -20,12 +20,12 @@ export async function showReferralMenu(ctx: Context) {
     }
   });
 
-  let text = `⫸ Referrals ⫷
+  let text = `${c.icons.handshake} Referrals ${c.icons.handshake}
 
 Get a share of profit from every time your referral rents our bot!
 Get them to start the bot via your link once, and bot will generate revenue for you every time they pay rent!
 
-${c.icons.cashFaceTongue} Current referral share: ${REFERRAL_FEE_PERC}%
+${c.icons.emoCashFaceTongue} Current referral share: ${REFERRAL_FEE_PERC}%
 (from every time users unlock the bot)
 
 ${c.icons.salute} Your referrals: ${referrals.length}
@@ -42,7 +42,7 @@ ${c.icons.cashBankHouse} All-time rewards: ${user.totalRefRewards} SOL
       inline_keyboard: [
         [{
           text: `${c.icons.backArrow} Back`,
-          callback_data: `welcome_message`,
+          callback_data: `work_menu`,
         }],
       ]
     },
