@@ -30,7 +30,18 @@ export async function sendSol(
   while (currentAttempt < maxAttempts) {
     if (currentAttempt != 0) {
       const currentBalance = await getSolBalance(fromKeypair.publicKey, true);
-      if (currentBalance && currentBalance < amountLamps + BigInt(c.DEFAULT_SOLANA_FEE_IN_LAMPS)) {
+      const rentExemptionLamps = await tryGetRentExemptionFee(fromKeypair.publicKey, true);
+      if (
+        (
+          currentBalance &&
+          currentBalance < amountLamps + BigInt(c.DEFAULT_SOLANA_FEE_IN_LAMPS)
+        ) || (
+          // sanity-checks
+          currentBalance && rentExemptionLamps && BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS) - amountLamps > 0 &&
+          // actual condition
+          rentExemptionLamps > BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS) - amountLamps
+        )
+      ) {
         const newAmount = BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS);
         h.debug(`${tag} trying to send more SOL than possible(${amountLamps}); sending all available SOL instead(${newAmount})`);
         amountLamps = newAmount;
@@ -96,7 +107,7 @@ export async function sendSol_waitForBalChange(
     checkBalanceOfAddr = receiverAddr;
   let balance = await getSolBalance(checkBalanceOfAddr, true);
   if (balance === null) {
-    h.debug(`${tag} failed to fetch initial balance; aborting SOL transfer`);
+    h.debug(`${tag} failed to fetch initial balance(${balance}); aborting SOL transfer`);
     return false;
   }
 
@@ -129,7 +140,7 @@ export async function sendAllSol_waitForBalChange(
     checkBalanceOfAddr = receiverAddr;
   let balance = await getSolBalance(checkBalanceOfAddr, true);
   if (balance === null) {
-    h.debug(`${tag} failed to fetch initial balance; aborting SOL transfer`);
+    h.debug(`${tag} failed to fetch initial balance(${balance}); aborting SOL transfer`);
     return false;
   }
 
@@ -150,7 +161,7 @@ export async function sendAllSol_waitForBalChange(
 }
 
 
-export async function ensureTokenAccountExists(keypair: solana.Keypair, tokenAddr: solana.PublicKey) {
+export async function ensureTokenAccountExists(keypair: solana.Keypair, tokenAddr: solana.PublicKey, tipOverrideLamps?: string) {
   const tag = `[${h.getShortAddr(keypair.publicKey)}]`
   h.debug(`${tag} making a small swap TX to ensure that token account is open...`);
   const builtTx = await getSwapTx(keypair, c.WSOL_MINT_ADDR, tokenAddr, 0.00001);
@@ -158,7 +169,7 @@ export async function ensureTokenAccountExists(keypair: solana.Keypair, tokenAdd
     h.debug(`${tag} can't build swap TX when trying to open token account; aborting`);
     return false;
   }
-  const success = await makeAndSendJitoBundle([builtTx.tx], keypair);
+  const success = await makeAndSendJitoBundle([builtTx.tx], keypair, tipOverrideLamps);
   if (!success) {
     h.debug(`${tag} initial swap TX that was supposed to ensure we've an open token account failed; aborting`);
     return false;

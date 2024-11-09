@@ -9,8 +9,11 @@ import { prisma } from '../..';
 import PuppetVolume from './puppets/volume';
 import BoosterBase, { BoosterType } from './base';
 
+
+
 class BoosterVolume extends BoosterBase {
   type: BoosterType = 'volume';
+
 
   async start(): Promise<void> {
     h.debug(`${this.tag} # starting up #`);
@@ -21,9 +24,9 @@ class BoosterVolume extends BoosterBase {
       this._cleanup();
       return;
     }
-    const tokenAcc = await sh.getTokenAcc(this.tokenAddr, this.keypair.publicKey);
+    const tokenAcc = await sh.getTokenAcc(this.tokenAddr, this.keypair.publicKey)
     if (!tokenAcc?.pubkey) {
-      if (!await sh.ensureTokenAccountExists(this.keypair, this.tokenAddr)) {
+      if (!await sh.ensureTokenAccountExists(this.keypair, this.tokenAddr, this.settings.jitoTip)) {
         h.debug(`${this.tag} couldn't ensure that token account is open`);
       } else {
         h.debug(`${this.tag} opened token account that previously didn't exist`);
@@ -53,6 +56,7 @@ If this error keeps coming up - contact our team`);
     await this._cleanup();
   }
 
+
   async spawnAndRunPuppet(budgetSol: number, skipBalanceCheck = false, retries = 0): Promise<boolean> {
     const maxRetries = 5;
     if (this.wasAskedToStop) {
@@ -65,23 +69,20 @@ If this error keeps coming up - contact our team`);
       if (!await this.hasEnoughFundsForNewPuppet(budgetSol)) {
         h.debug(`${this.tag} not enough funds to spawn new puppet`);
         return false;
-      } else if (retries >= maxRetries) {
+      } else if (retries >= 5) {
         h.debug(`${this.tag} failed to spawn new puppet ${maxRetries} times; giving up`);
         return false;
       }
       console.warn(`${this.tag} failed to fill newly-spawned puppet: ${h.getShortAddr(puppet.address)}; removing it and retrying with a new one`);
+      this.printOwnAndPuppetFreshBal(puppet.keypair.publicKey);
       return await this.spawnAndRunPuppet(budgetSol, skipBalanceCheck, retries + 1);
     }
 
     await puppet.run();
-    const success: boolean = true; // Assuming the run method completes successfully
-    if (!success && retries < maxRetries) {
-      console.warn(`${this.tag} puppet failed to land; spawning a new puppet`);
-      return await this.spawnAndRunPuppet(budgetSol, skipBalanceCheck, retries + 1);
-    }
-
-    return success;
+    return true;
   }
+
+
 
   protected async _hasReasonToStop(): Promise<boolean> {
     const wantedBoosterDurationMs = this.settings.volumeDuration * 1000;
@@ -104,6 +105,8 @@ If this error keeps coming up - contact our team`);
       return false;
     }
   }
+
 }
+
 
 export default BoosterVolume;

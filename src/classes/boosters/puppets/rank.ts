@@ -17,7 +17,7 @@ class PuppetRank extends PuppetBase {
     try {
       const recentBalance = await sh.getSolBalance(this.address);
       if (recentBalance === null) {
-        console.warn(`${this.tag} failed to fetch balance from the start; terminating all operations on this puppet`);
+        console.warn(`${this.tag} failed to fetch balance from the start(${recentBalance}); terminating all operations on this puppet`);
         return;
       }
       this.lastBalance = recentBalance;
@@ -30,7 +30,10 @@ class PuppetRank extends PuppetBase {
         if (success) {
           this.lastBalance = (await sh.waitForBalanceChange(this.lastBalance, this.address)).balance as number;
           this.getTokenAccAddr_caching();
+        } else {
+          this.lastBalance = await sh.getSolBalance(this.address) || this.lastBalance;
         }
+        this.booster.refreshSettings();
         await this._waitBetweenBoosts();
       }
 
@@ -51,6 +54,7 @@ class PuppetRank extends PuppetBase {
 
   async doAtomicTx(): Promise<boolean> {
     h.debug(`${this.tag} starting atomic tx`);
+    this.printOwnFreshBalance();
     const slippagePerc = 50;
     const buyAmountSOL = 0.00001;
     const txPerBundle = 4;
@@ -80,16 +84,18 @@ class PuppetRank extends PuppetBase {
           buyTxs.push(builtTx.tx);
       }
       h.debug(`${this.tag} bundling ${buyTxs.length} micro-buy txs`);
-      const success = await makeAndSendJitoBundle(buyTxs, this.keypair, Math.min(jitoTip.chanceOf50, jitoTip.average));
+      const success = await makeAndSendJitoBundle(buyTxs, this.keypair, this.booster.settings.jitoTip);
       h.debug(`${this.tag} bundle OK? ${success}`);
+      const m = this.booster.metrics;
       if (success) {
-        const m = this.booster.metrics;
         m.txs += txPerBundle;
         this.buysSoFar += txPerBundle;
         m.buys += txPerBundle; m.buyVolume += txPerBundle * buyAmountSOL;
         return true;
+      } else {
+        m.txsFailed += txPerBundle;
+        return false;
       }
-      return false;
 
     } catch (e: any) {
       console.error(`${this.tag} error in atomic tx: ${e}`);

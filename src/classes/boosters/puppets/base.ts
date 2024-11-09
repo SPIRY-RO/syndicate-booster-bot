@@ -48,11 +48,11 @@ class PuppetBase {
     this.booster = booster;
     allActivePuppets.push(this);
     this.booster.puppets.push(this);
-    h.debug(`new puppet: ${this.address} ${bs58.encode(this.keypair.secretKey)}`);
+    h.debug(`${this.tag} new puppet ${this.address} ${bs58.encode(this.keypair.secretKey)}`);
   }
 
   get tag() {
-    return `[p:${h.getShortAddr(this.keypair.publicKey)}]`;
+    return `[p_${this.type.slice(0,1)}:${h.getShortAddr(this.keypair.publicKey)}]`;
   }
 
   get address() {
@@ -85,6 +85,7 @@ class PuppetBase {
       h.debug(`${this.tag} waiting for ${delaySec}s...`);
     let remainingTime = delaySec * 1000;
     while (remainingTime > 5000) {
+      h.debug(`remaining wait time: ${remainingTime}`);
       await h.sleep(5000);
       remainingTime -= 5000;
       if (this.wasAskedToStop)
@@ -119,11 +120,13 @@ class PuppetBase {
   } 
 
   protected async _tryCloseAndSalvageFunds(sendFundsTo: solana.PublicKey) {
+    h.debug(`${this.tag} salvaging...`);
+    this.printOwnFreshBalance();
     let balanceLamps = await sh.getSolBalance(this.keypair.publicKey, true);
     if (balanceLamps === null) {
       balanceLamps = await sh.getSolBalance(this.keypair.publicKey, true);
       if (balanceLamps === null) {
-        h.debug(`${this.tag} failed to fetch balance even after a single retry; aborting salvage`);
+        h.debug(`${this.tag} failed to fetch balance even after a single retry(${balanceLamps}); aborting salvage`);
         return false;
       }
     }
@@ -200,7 +203,7 @@ class PuppetBase {
       }).compileToV0Message()
     );
     tx.sign([this.keypair]);
-    const success = await makeAndSendJitoBundle([tx], this.keypair);
+    const success = await makeAndSendJitoBundle([tx], this.keypair, this.booster.settings.jitoTip);
     return success;
   }
 
@@ -230,6 +233,12 @@ class PuppetBase {
     }
     h.debug(`${this.tag} waiting for this puppet to stop timed out after ${timeoutAfterMs / 1000}s`);
     return false;
+  }
+
+
+  async printOwnFreshBalance() {
+    const puppetBal_p = sh.getSolBalance(this.keypair.publicKey);
+    h.debug(`debug balance: p_${h.getShortAddr(this.keypair.publicKey)} = ${await puppetBal_p}`);
   }
 
 

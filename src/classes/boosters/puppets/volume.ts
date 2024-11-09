@@ -1,8 +1,10 @@
+
 import PuppetBase from './base';
 import * as c from '../../../const';
 import * as h from '../../../helpers';
 import * as sh from '../../../utils/solana_helpers';
 import { makeAndSendJitoBundle } from '../../../utils/jito';
+
 
 class PuppetVolume extends PuppetBase {
 
@@ -11,12 +13,12 @@ class PuppetVolume extends PuppetBase {
     try {
       const recentBalance = await sh.getSolBalance(this.address);
       if (recentBalance === null) {
-        console.warn(`${this.tag} failed to fetch balance from the start; terminating all operations on this puppet`);
+        console.warn(`${this.tag} failed to fetch balance from the start(${recentBalance}); terminating all operations on this puppet`);
         return;
       }
       this.lastBalance = recentBalance;
       if (!(await this.getTokenAccAddr_caching())) {
-        if (await sh.ensureTokenAccountExists(this.keypair, this.booster.tokenAddr)) {
+        if (await sh.ensureTokenAccountExists(this.keypair, this.booster.tokenAddr, this.booster.settings.jitoTip)) {
           this.booster.metrics.txs += 1;
           this.lastBalance = (await sh.waitForBalanceChange(this.lastBalance, this.address)).balance as number;
           await this.getTokenAccAddr_caching();
@@ -27,27 +29,18 @@ class PuppetVolume extends PuppetBase {
           h.debug(`${this.tag} found reason to stop; breaking main loop...`);
           break;
         }
-        let success = false;
-        while (!success) {
-          if (this._hasReasonToStop()) {
-            h.debug(`${this.tag} found reason to stop during atomic transaction; breaking retry loop...`);
-            break;
-          }
-          success = await this.doAtomicTx(lastTokenBalance);
-          if (!success) {
-            console.log(`${this.tag} Atomic transaction failed. Retrying...`);
-            await h.sleep(5000); // Retry after 1 second
-          }
+        const success = await this.doAtomicTx(lastTokenBalance);
+        if (success) {
+          const { balance: newBalance } = await sh.waitForBalanceChange(this.lastBalance, this.address);
+          this.lastBalance = newBalance as number;
+          lastTokenBalance = (await sh.getTokenAccBalance(this._tokenAccAddr!))?.uiAmount || lastTokenBalance;
+        } else {
+          this.lastBalance = await sh.getSolBalance(this.address) || this.lastBalance;
         }
-        if (this._hasReasonToStop()) {
-          h.debug(`${this.tag} found reason to stop after atomic transaction; breaking main loop...`);
-          break;
-        }
-        const { balance: newBalance } = await sh.waitForBalanceChange(this.lastBalance, this.address);
-        this.lastBalance = newBalance as number;
-        lastTokenBalance = (await sh.getTokenAccBalance(this._tokenAccAddr!))?.uiAmount || lastTokenBalance;
+        this.booster.refreshSettings();
         await this._waitBetweenBoosts();
       }
+      this.printOwnFreshBalance();
       await this.tryCloseAndSalvageFunds_alwaysCleanup(this.booster.keypair.publicKey);
     } catch (e: any) {
       console.error(`${this.tag} caught error in run(): ${e}`);
@@ -56,12 +49,8 @@ class PuppetVolume extends PuppetBase {
     }
   }
 
-  async doAtomicTx(existingTokens_inSol: number = 0, retries = 0): Promise<boolean> {
-    const maxRetries = 3;
-    if (this._hasReasonToStop()) {
-      h.debug(`${this.tag} found reason to stop before starting atomic transaction; aborting...`);
-      return false;
-    }
+
+  async doAtomicTx(existingTokens_inSol: number = 0): Promise<boolean> {
     const fromAmountSol = Number(this.lastBalance) - c.RESERVED_PUPPET_BALANCE;
     const fromAmount_forBuy1 = h.roundDown(fromAmountSol / 100 * h.getRandomNumber(25, 75), 9);
     const fromAmount_forBuy2 = h.roundDown(fromAmountSol - fromAmount_forBuy1, 9);
@@ -79,22 +68,20 @@ class PuppetVolume extends PuppetBase {
     }
     const txs = [buy1.tx, buy2.tx, sell.tx];
     h.debug(`${this.tag} performing atomic TX; ${this.tag} ${fromAmount_forBuy1} + ${fromAmount_forBuy2} SOL -> ${minAmountOut} token`);
-    const success = await makeAndSendJitoBundle(txs, this.keypair);
+    this.printOwnFreshBalance();
+    const success = await makeAndSendJitoBundle(txs, this.keypair, this.booster.settings.jitoTip);
     h.debug(`${this.tag} atomic TX succeeded: ${success}`);
+    const m = this.booster.metrics;
     if (success) {
-      const m = this.booster.metrics;
       m.txs += 3;
       m.buys += 2; m.buyVolume += fromAmountSol;
       m.sells += 1; m.sellVolume += sell.estimates.amountOut_inSol;
-      return true;
     } else {
-      if (retries >= maxRetries) {
-        return false; // Indicate failure after max retries
-      } else {
-        return await this.doAtomicTx(existingTokens_inSol, retries + 1); // Retry
-      }
+      m.txsFailed += 3;
     }
+    return success;
   }
+
 
   protected _hasReasonToStop(): boolean {
     if (this.wasAskedToStop) {

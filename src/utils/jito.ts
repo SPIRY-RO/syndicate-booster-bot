@@ -11,27 +11,29 @@ import * as h from "../helpers";
 import * as c from "../const";
 import { envConf } from "../config";
 import { JITO_BUNDLE_TIMEOUT } from "../const";
-import { getRandomTipAccount, jitoTip } from "./jito-tip-deamons";
-import { averageJitoTip } from "./jito-avgtip";
+import { getRandomTipAccount, getTipFromSetting, jitoTip, TipSetting } from "./jito-tip-deamons";
 
 const MAX_TXS = 4;
 
 const jitoKey = solana.Keypair.fromSecretKey(base58.decode(envConf.JITO_AUTH_PRIVATE_KEY));
 export const searchClient = searcherClient(envConf.BLOCK_ENGINE_URL, jitoKey);
 
-export function floatToLamports(float: number): number {
-  return Math.floor(float * solana.LAMPORTS_PER_SOL);
-}
-
 export async function makeAndSendJitoBundle(
   txs: solana.VersionedTransaction[],
   keypair: solana.Keypair,
-  tipOverride_inLamps?: number
+  tipOverrideSetting?: string | number
 ): Promise<boolean> {
-  if (!tipOverride_inLamps)
-    // tipOverride_inLamps = Math.min(jitoTip.average, jitoTip.chanceOf50);
-    // tipOverride_inLamps = floatToLamports(0.0025);
-    tipOverride_inLamps = floatToLamports(averageJitoTip);
+  if (!tipOverrideSetting || tipOverrideSetting == '0') {
+    tipOverrideSetting = jitoTip.chanceOf75;
+  } else if (isNaN(tipOverrideSetting as number)) {
+    tipOverrideSetting = getTipFromSetting(tipOverrideSetting as TipSetting)
+  }
+  tipOverrideSetting = Number(tipOverrideSetting);
+
+  if (tipOverrideSetting < jitoTip.chanceOf25 || tipOverrideSetting > jitoTip.chanceOf99) {
+    console.warn(`[jito] valid but inadequately large/small tip supplied: ${tipOverrideSetting}`);
+  }
+  //Math.min(jitoTip.chanceOf50, jitoTip.average)
 
   try {
     //const txNum = Math.ceil(txs.length / 3);
@@ -43,7 +45,7 @@ export async function makeAndSendJitoBundle(
       for (let j = downIndex; j < upperIndex; j++) {
         if (txs[j]) newTxs.push(txs[j]);
       }
-      const bundleID = await _bundleExecuter(newTxs, keypair, tipOverride_inLamps);
+      const bundleID = await _bundleExecuter(newTxs, keypair, tipOverrideSetting);
       if (bundleID) {
         if (await waitUnilBundleSucceeds(bundleID)) return true;
         else return false;
@@ -93,11 +95,11 @@ async function build_bundle(
   const resp = await web3Connection.getLatestBlockhash("processed");
   bund.addTransactions(...txs);
 
-  let jitoTipLamps = Math.floor(averageJitoTip * solana.LAMPORTS_PER_SOL);
+  //let jitoTipLamps = h.incrementByPercent(jitoTipSizeFor.chanceOf99, 10);
 
   h.debug(`[jito] tip is ${tipInLamps} lamports`);
 
-  let maybeBundle = bund.addTipTx(signerKeypair, jitoTipLamps, tipAccount, resp.blockhash);
+  let maybeBundle = bund.addTipTx(signerKeypair, tipInLamps, tipAccount, resp.blockhash);
 
   if (isError(maybeBundle)) {
     throw maybeBundle;
@@ -170,6 +172,7 @@ export async function getBundleStatuses(bundleIds: [string]) {
       },
     });
 
+    console.dir(response.data, {depth: 6});
     return response.data?.result?.value;
     //return response.data;
   } catch (e: any) {

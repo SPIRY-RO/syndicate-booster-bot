@@ -9,7 +9,6 @@ import { prisma } from '../..';
 import PuppetBase from './puppets/base';
 import { DEF_MESSAGE_OPTS } from '../../config';
 import { makeAndSendJitoBundle } from '../../utils/jito';
-import { getDexscreenerTokenInfo } from "../../utils/dexscreener";
 
 const allActiveBoosters: BoosterBase[] = [];
 
@@ -45,6 +44,17 @@ class BoosterBase {
     }
     return null;
   }
+
+  static getAnyActiveBoosterFor(userID: string) {
+    for (const booster of allActiveBoosters) {
+      if (booster.ownerTgID == userID && booster.type !== "salvager")
+        return booster;
+      else if (booster.ownerTgID == userID && booster.type === "salvager")
+        console.warn(`Checking if user ${userID} has any active boosters; running salvager ignored, as it's a special type of booster`);
+    }
+    return null;
+  }
+
 
 
   constructor(
@@ -87,6 +97,12 @@ class BoosterBase {
     return `[b:${h.getShortAddr(this.keypair.publicKey)}|${this.type}]`;
   }
 
+  get failRate() {
+    if (!this.metrics.txs)
+      return `0%`;
+    return `${h.roundDown((this.metrics.txsFailed / this.metrics.txs) * 100, 2)}%`;
+  }
+
   // abstract function
   async start(): Promise<void> {
     this._cleanup();
@@ -97,6 +113,7 @@ class BoosterBase {
     const gasReservationPerPuppet = 0.003;
     const minRequiredBalance = (
       c.MIN_BOOSTER_BALANCE_SOL + (c.MIN_NEW_PUPPET_BUDGET + gasReservationPerPuppet) * nOfPuppets);
+    this.lastBalance = await sh.getSolBalance(this.keypair.publicKey) || this.lastBalance;
     const puppetBudget = (this.lastBalance - c.MIN_BOOSTER_BALANCE_SOL) / nOfPuppets - gasReservationPerPuppet;
     if (this.lastBalance < minRequiredBalance || puppetBudget < c.MIN_NEW_PUPPET_BUDGET) {
       if (this.lastBalance < minRequiredBalance) {
@@ -128,7 +145,7 @@ class BoosterBase {
     if (!skipBalanceCheck) {
       const balance = await sh.getSolBalance(this.keypair.publicKey);
       if (balance === null) {
-        console.warn(`${this.tag} failed to fetch own balance when sending funds; aborting`);
+        console.warn(`${this.tag} failed to fetch own balance when sending funds(${balance}); aborting`);
         return false;
       }
       this.lastBalance = balance;
@@ -156,23 +173,18 @@ class BoosterBase {
       const tokenBalance = (await sh.getTokenAccBalance(this.tokenAccAddr)).uiAmount!;
       const hasSubstantialTokenHoldings = ((await sh.getTokenValueInSol(tokenBalance, this.tokenAddr)) >= 0.003);
       h.debug(`${this.tag} has substantial token holdings? ${hasSubstantialTokenHoldings}`);
-      
-      // Fetch token details
-      const tokenInfo = await getDexscreenerTokenInfo(this.tokenAddr.toBase58());
-      if (tokenInfo) {
-        h.debug(`Token Name: ${tokenInfo.tokenName}, Token Symbol: ${tokenInfo.tokenSymbol}`);
-      } else {
-        h.debug(`Failed to fetch token details for ${this.tokenAddr.toBase58()}`);
-      }
-
       if (hasSubstantialTokenHoldings) {
         h.debug(`${this.tag} trying to sell our existing tokens`);
         const tx = (await sh.getSwapTx(this.keypair, this.tokenAddr, c.WSOL_MINT_ADDR, tokenBalance))?.tx;
         if (tx) {
-          const success = await makeAndSendJitoBundle([tx], this.keypair);
+          h.debug(`${this.tag} built token sell tx OK; sending...`);
+          const success = await makeAndSendJitoBundle([tx], this.keypair, this.settings.jitoTip);
+          h.debug(`${this.tag} token sell tx sent: ${success}`);
+          return success;
         }
       }
     }
+    return false;
   }
 
 
@@ -189,23 +201,16 @@ class BoosterBase {
   }
 
 
-  async tryEmptyInactivePuppets() {
-    const userPuppets = await prisma.puppet.findMany({
-      where: { ownerTgID: this.ownerTgID }
-    })
-    const inactivePuppets: PuppetBase[] = [];
 
+  async tryEmptyInactivePuppets() {
+    const inactivePuppets = await this._getInactivePuppets();
     // for manual salvaging of puppets that you know PKs of, but have no DB entries
     //await this.onDemand_salvage(inactivePuppets);
 
-    for (const puppet of userPuppets) {
-      if (!PuppetBase.isPuppetActive(puppet.pubKey))
-        inactivePuppets.push(
-          new PuppetBase(h.keypairFrom(puppet.privKey), this)
-        );
-    }
-    if (inactivePuppets.length === 0)
+    if (inactivePuppets.length === 0) {
+      h.debug(`${this.tag} 0 inactive puppets found; assuming there's nothing to do`);
       return true;
+    }
 
     h.debug(`${this.tag} found ${inactivePuppets.length} inactive puppets; emptying them`);
     const salvagePromises: Promise<boolean>[] = [];
@@ -222,17 +227,41 @@ class BoosterBase {
     return overallSuccess;
   }
 
+  protected async _getInactivePuppets() {
+    const userPuppets = await prisma.puppet.findMany({
+      where: { ownerTgID: this.ownerTgID }
+    })
+    const inactivePuppets: PuppetBase[] = [];
+    for (const puppet of userPuppets) {
+      if (!PuppetBase.isPuppetActive(puppet.pubKey))
+        inactivePuppets.push(
+          new PuppetBase(h.keypairFrom(puppet.privKey), this)
+        );
+    }
+    return inactivePuppets;
+  }
+
+
 
   async hasEnoughFundsForNewPuppet(puppetBudget: number) {
     const balance = await sh.getSolBalance(this.keypair.publicKey);
     if (balance === null) {
-      h.debug(`${this.tag} failed to fetch own balance; assuming that we don't have enough funds`);
+      h.debug(`${this.tag} failed to fetch own balance(${balance}); assuming that we don't have enough funds`);
       return false;
     }
     this.lastBalance = balance;
     return (balance - puppetBudget > c.MIN_BOOSTER_BALANCE_SOL);
   }
 
+
+  async refreshSettings() {
+    try {
+      this.settings = await prisma.settings.findUniqueOrThrow({ where: { internalID: this.settings.internalID } });
+    } catch (e: any) {
+      console.error(`${this.tag} error while refreshing settings: ${e}`);
+      console.trace(e);
+    }
+  }
 
   async getTokenAccAddr_caching() {
     if (!this.tokenAccAddr) {
@@ -245,6 +274,12 @@ class BoosterBase {
 
   async askToStop() {
     this.wasAskedToStop = true;
+  }
+
+  async printOwnAndPuppetFreshBal(puppetAddr: solana.PublicKey) {
+    const masterBal_p = sh.getSolBalance(this.keypair.publicKey);
+    const puppetBal_p = sh.getSolBalance(puppetAddr);
+    h.debug(`debug balance: m_${h.getShortAddr(this.keypair.publicKey)} = ${await masterBal_p}; p_${h.getShortAddr(puppetAddr)} = ${await puppetBal_p}`);
   }
 
 
@@ -262,26 +297,32 @@ class BoosterBase {
     return true || false;
   }
 
-
+  
   protected async _sendMetricsToOwner() {
     let metrics = `${c.icons.book} <b>Results</b> for last booster
 ${this.tag}`;
-    if (this.type === 'volume') {
+    if (this.type === "salvager") {
+      return; // do not send metrics when running salvager
+    } else if (this.type === 'volume') {
       metrics += `
 Buys: ${this.metrics.buyVolume.toFixed(3)} SOL | sells: ${this.metrics.sellVolume.toFixed(3) || 'N/A'} SOL
-Total txs: ${this.metrics.txs}
-Unique wallets(market-makers) used: ${this.metrics.uniqueWallets}`;
+Total txs: ${this.metrics.txs} | failed txs: ${this.failRate}
+Unique wallets(market-makers) used: ${this.metrics.uniqueWallets}
+`;
     } else if (this.type === 'holders') {
       metrics += `
-New holders: ${this.metrics.uniqueWallets}`;
+New holders: ${this.metrics.uniqueWallets}
+Failed txs: ${this.failRate}
+`;
     } else if (this.type === 'rank') {
       metrics += `
-Unique market-makers used: ${this.metrics.uniqueWallets}
-Buys: ${this.metrics.txs}`;
+Unique wallets(market-makers) used: ${this.metrics.uniqueWallets}
+Buys: ${this.metrics.txs}
+Failed txs: ${this.failRate}
+`;
     }
     await h.trySend(this.ownerTgID, metrics, DEF_MESSAGE_OPTS);
   }
-
 
   protected async _cleanup() {
     this._sendMetricsToOwner();
@@ -303,12 +344,14 @@ export const BOOSTER_TYPES = {
   holders: 'holders',
   rank: 'rank',
   base: 'base',
+  salvager: 'salvager',
 } as const;
 const _boosterTypes = Object.values(BOOSTER_TYPES);
 export type BoosterType = typeof _boosterTypes[number];
 
 export interface Metrics {
   txs: number,
+  txsFailed: number,
   uniqueWallets: number,
   buys: number,
   sells: number,
@@ -317,6 +360,7 @@ export interface Metrics {
 }
 const emptyMetrics: Metrics = {
   txs: 0,
+  txsFailed: 0,
   uniqueWallets: 0,
   buys: 0,
   sells: 0,
