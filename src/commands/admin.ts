@@ -51,7 +51,7 @@ export async function admin_addAdmin(ctx: any) {
   const args = h.unwrapCommandArguments(ctx, [
     {
       value: "newAdminID",
-      placeholder: "309378400",
+      placeholder: "476923989",
     },
   ]);
   if (!args)
