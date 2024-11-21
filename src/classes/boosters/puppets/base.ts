@@ -122,8 +122,10 @@ class PuppetBase {
   protected async _tryCloseAndSalvageFunds(sendFundsTo: solana.PublicKey) {
     h.debug(`${this.tag} salvaging...`);
     this.printOwnFreshBalance();
+    h.debug(`v ${this.tag} fetching sol balance, once`);
     let balanceLamps = await sh.getSolBalance(this.keypair.publicKey, true);
     if (balanceLamps === null) {
+      h.debug(`v ${this.tag} retrying sol balance fetch, once`);
       balanceLamps = await sh.getSolBalance(this.keypair.publicKey, true);
       if (balanceLamps === null) {
         h.debug(`${this.tag} failed to fetch balance even after a single retry(${balanceLamps}); aborting salvage`);
@@ -131,8 +133,10 @@ class PuppetBase {
       }
     }
 
+    h.debug(`v ${this.tag} fetching token acc addr`);
     const tokenAccAddr = await this.getTokenAccAddr_caching();
     if (tokenAccAddr) {
+      h.debug(`v ${this.tag} got token acc addr; trying to close it`);
       const closedOK = await this._tryCloseTokenAcc(sendFundsTo);
       if (!closedOK) {
         h.debug(`${this.tag} failed to close token acc; aborting salvage`);
@@ -150,8 +154,9 @@ class PuppetBase {
 
     this.lastBalance = balanceLamps / solana.LAMPORTS_PER_SOL;
     try {
+      h.debug(`v ${this.tag} trying to send all sol to booster's master wallet`);
       const lastTxHash = await sh.sendAllSol(this.keypair, sendFundsTo);
-      console.log(`${this.tag} submitted tx to send all SOL to booster's wallet; hash: ${lastTxHash}`);
+      console.info(`${this.tag} submitted tx to send all SOL to booster's wallet; hash: ${lastTxHash}`);
       if (lastTxHash) {
         const { balance: newBalance, success } = await sh.waitForBalanceChange(balanceLamps, this.keypair.publicKey, true);
         if (success) {

@@ -35,6 +35,7 @@ class PuppetVolume extends PuppetBase {
           this.lastBalance = newBalance as number;
           lastTokenBalance = (await sh.getTokenAccBalance(this._tokenAccAddr!))?.uiAmount || lastTokenBalance;
         } else {
+          await h.sleep(h.getRandomNumber(2000, 4000, 4)); // prevents our node from getting DDOSed in case of many errors in quick succession
           this.lastBalance = await sh.getSolBalance(this.address) || this.lastBalance;
         }
         this.booster.refreshSettings();

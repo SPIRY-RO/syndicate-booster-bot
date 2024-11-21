@@ -51,6 +51,9 @@ If this error keeps coming up - contact our team`);
         break;
       }
       const success = await this.doAtomicTx();
+      if (!success) {
+        await h.sleep(h.getRandomNumber(2000, 4000, 4)); // prevents our node from getting DDOSed in case of many errors in quick succession
+      }
       this.refreshSettings();
       await this._waitBetweenBoosts();
     }
@@ -59,7 +62,7 @@ If this error keeps coming up - contact our team`);
 
 
 
-  async doAtomicTx() {
+  async doAtomicTx(): Promise<boolean> {
     try {
       const rndKeypairs: solana.Keypair[] = []
       for (let i = 0; i < this.nOfNewHoldersPerBundle; i++) {
@@ -97,12 +100,15 @@ If this error keeps coming up - contact our team`);
         this.metrics.buyVolume += this.newHolderBagInSol * txs.length;
         this.metrics.uniqueWallets += txs.length;
         this.lastBalance = (await sh.waitForBalanceChange(this.lastBalance, this.keypair.publicKey)).balance;
+        return true;
       } else {
         this.metrics.txsFailed += txs.length;
+        return false;
       }
     } catch (e: any) {
       console.error(`${this.tag} error when making atomic tx: ${e}`);
       console.trace(e);
+      return false;
     }
   }
 

@@ -34,6 +34,7 @@ import { admin_addAdmin, admin_rentAdd, admin_rentNullify, admin_stripAdmin, adm
 import { wizardSetJitoTip, wizardSetJitoTip_name } from "./scenes/set-jito-tip";
 import { testFullTransfer } from "./test";
 import { showTelegramIDs } from "./commands/id";
+import { stressTestJupiter } from "./tests/node_stress_test";
 
 
 export const prisma = new PrismaClient();
@@ -201,3 +202,4 @@ async function showAllPubkeys() {
 }
 
 //testFullTransfer();
+//stressTestJupiter();

@@ -31,6 +31,7 @@ class PuppetRank extends PuppetBase {
           this.lastBalance = (await sh.waitForBalanceChange(this.lastBalance, this.address)).balance as number;
           this.getTokenAccAddr_caching();
         } else {
+          await h.sleep(h.getRandomNumber(2000, 4000, 4)); // prevents our node from getting DDOSed in case of many errors in quick succession
           this.lastBalance = await sh.getSolBalance(this.address) || this.lastBalance;
         }
         this.booster.refreshSettings();

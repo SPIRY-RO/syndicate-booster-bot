@@ -18,37 +18,45 @@ export async function sendSol(
   fromKeypair: solana.Keypair,
   toAddr: string | solana.PublicKey,
   amountLamps: string | number | bigint | null,
+  priorityFeeLamps?: number,
 ) {
   if (typeof toAddr === "string")
     toAddr = new solana.PublicKey(toAddr);
   amountLamps = BigInt(parseInt(amountLamps as string));
+  if (!priorityFeeLamps)
+    priorityFeeLamps = c.PRIORITY_FEE_TRANSFER_DEFAULT_IN_LAMPS;
 
   const tag = `[sol:${h.getShortAddr(fromKeypair.publicKey)}->${h.getShortAddr(toAddr)}]`;
+  h.debug(`v ${tag} entering transaction function; tx priority fee set at ${priorityFeeLamps} lamports(${h.roundDown(priorityFeeLamps/solana.LAMPORTS_PER_SOL, 9)} SOL)`);
 
   let currentAttempt = 0;
   const maxAttempts = 10;
   while (currentAttempt < maxAttempts) {
     if (currentAttempt != 0) {
+      h.debug(`v ${tag} first-time transaction check; polling balance & rent exemption fee`);
       const currentBalance = await getSolBalance(fromKeypair.publicKey, true);
       const rentExemptionLamps = await tryGetRentExemptionFee(fromKeypair.publicKey, true);
       if (
         (
           currentBalance &&
-          currentBalance < amountLamps + BigInt(c.DEFAULT_SOLANA_FEE_IN_LAMPS)
+          currentBalance < amountLamps + BigInt(c.DEFAULT_SOLANA_FEE_IN_LAMPS + priorityFeeLamps)
         ) || (
           // sanity-checks
-          currentBalance && rentExemptionLamps && BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS) - amountLamps > 0 &&
+          currentBalance && rentExemptionLamps && BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS - priorityFeeLamps) - amountLamps > 0 &&
           // actual condition
-          rentExemptionLamps > BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS) - amountLamps
+          rentExemptionLamps > BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS - priorityFeeLamps) - amountLamps
         )
       ) {
-        const newAmount = BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS);
+        const newAmount = BigInt(currentBalance - c.DEFAULT_SOLANA_FEE_IN_LAMPS - priorityFeeLamps);
         h.debug(`${tag} trying to send more SOL than possible(${amountLamps}); sending all available SOL instead(${newAmount})`);
         amountLamps = newAmount;
       }
     }
 
+    const priorityFeeSol = h.roundDown(priorityFeeLamps / solana.LAMPORTS_PER_SOL, 9);
+    h.debug(`v ${tag} building a sol transfer TX (not transacting yet)`);
     const transaction = new solana.Transaction().add(
+      getPriorityFeeInstr(priorityFeeSol),
       solana.SystemProgram.transfer({
         fromPubkey: fromKeypair.publicKey,
         toPubkey: toAddr,
@@ -58,12 +66,15 @@ export async function sendSol(
 
     try {
 
+      h.debug(`v ${tag} about to transact; next line should have more details`);
       h.debug(`${tag} attempt ${currentAttempt + 1}; amount ${amountLamps}`);
       const txHash = await solana.sendAndConfirmTransaction(web3Connection, transaction, [fromKeypair]);
       h.debug(`${tag} tx sent, awaiting confirmation...`);
 
+      h.debug(`v ${tag} getting tx signature status`);
       const confirmation = await web3Connection.getSignatureStatus(txHash);
       if (confirmation?.value?.err) {
+        h.debug(`v ${tag} throwing error because tx contains errors`);
         throw new Error(`Error: ${tag} tx failed: ${JSON.stringify(confirmation.value?.err)}`);
       }
 
@@ -71,25 +82,37 @@ export async function sendSol(
       return txHash;
     } catch (error: any) {
       currentAttempt += 1;
-      console.warn(`${tag} attempt ${currentAttempt}, error: ${error.message}`);
+      h.debug(`v ${tag} failed tx attempt, details below`);
+      h.debug(`${tag} attempt ${currentAttempt}, error: ${error.message}`);
+      //console.warn(`${tag} attempt ${currentAttempt}, error: ${error.message}`);
 
       if (currentAttempt >= maxAttempts) {
-        console.error(`${tag} max attempts reached; tx failed`);
+        h.debug(`v ${tag} max retries ${maxAttempts} exhausted; also logging this to the stderr log`);
+        console.error(`v ${tag} max retries ${maxAttempts} exhausted`);
+        //console.error(`${tag} max attempts reached; tx failed`);
         return null;
       }
-      await h.sleep(1000);
+      const sleepForMs = 1000;
+      h.debug(`v ${tag} sleeping for ${sleepForMs}ms between failed transacting attempts`);
+      await h.sleep(sleepForMs);
     }
   }
 }
 
 
-export async function sendAllSol(fromKeypair: solana.Keypair, toAddr: string | solana.PublicKey) {
+export async function sendAllSol(
+  fromKeypair: solana.Keypair,
+  toAddr: string | solana.PublicKey,
+  priorityFeeLamps?: number,
+) {
   if (typeof toAddr === "string")
     toAddr = new solana.PublicKey(toAddr);
+  if (!priorityFeeLamps)
+    priorityFeeLamps = c.PRIORITY_FEE_TRANSFER_DEFAULT_IN_LAMPS;
   const balance = await getSolBalance(fromKeypair.publicKey, true) || 0;
-  const amountInLamps = balance - c.DEFAULT_SOLANA_FEE_IN_LAMPS;
+  const amountInLamps = balance - c.DEFAULT_SOLANA_FEE_IN_LAMPS - priorityFeeLamps;
 
-  const txHash = await sendSol(fromKeypair, toAddr, amountInLamps);
+  const txHash = await sendSol(fromKeypair, toAddr, amountInLamps, priorityFeeLamps);
   return txHash;
 }
 
@@ -215,7 +238,7 @@ export async function getSwapTx(
         quoteResponse: estimates.rawResponseData,
         userPublicKey: keypair.publicKey.toString(),
         wrapAndUnwrapSol: true,
-        prioritizationFeeLamports: c.SWAP_PRIORITY_FEE_IN_LAMPS,
+        prioritizationFeeLamports: c.PRIORITY_FEE_SWAP_IN_LAMPS,
       },
     });
     const { swapTransaction } = jupiterSwapResp.data;
@@ -419,12 +442,15 @@ export async function waitForBalanceChange(
   let currentBalance = initialBalance;
   const startedAt = Date.now();
   while (initialBalance == currentBalance) {
+    h.debug(`v [${h.getShortAddr(address)}] checking for balance changes once`);
     const newBalance = await getSolBalance(address, inLamps);
     if (newBalance !== null)
       currentBalance = newBalance;
     else
       h.debug(`[${h.getShortAddr(address)}] received empty(${newBalance}) balance; ignoring`);
-    await h.sleep(1000);
+    const waitForMs = 1000;
+    h.debug(`v [${h.getShortAddr(address)}] waiting for ${waitForMs}ms between balance change checks`);
+    await h.sleep(waitForMs);
     if (Date.now() > startedAt + timeout) {
       h.debug(`[${h.getShortAddr(address)}] balance check timed out after ${timeout / 1000}s`);
       if (!inLamps)
@@ -464,6 +490,8 @@ export async function getTokenDecimals(tokenAddr: string | solana.PublicKey) {
       return result.value.decimals;
     } catch (e: any) {
       console.warn(`[${h.getShortAddr(tokenAddr)}] failed to get token decimals with error: ${e}`);
+      console.warn(`fucking trace`);
+      console.trace(e);
     }
     retries -= 1;
   }
@@ -602,4 +630,22 @@ export async function tryGetRentExemptionFee(address: solana.PublicKey | string,
     console.warn(`Failed to get rent-exemption fee; defaulting to 0; error: ${e}`);
     return 0;
   }
+}
+
+
+/**
+ * Sets priority fee PER INSTRUCTION in SOL, assumes that you use default 200 000 compute-units limit
+ * @param desiredTotalFeeInSol - total fee to pay per each INSTRUCTION in tx, in Sol
+ * @returns 
+ */
+export function getPriorityFeeInstr(desiredTotalFeeInSol: number) {
+  const DEFAULT_uLAMPS_PER_CU = 50000; // for reference | lamports per compute-unit; default Solana value
+  const DEFAULT_NUM_OF_CU_PER_TX = 200000; // compute units per transaction; default Solana value
+  const uLAMPORTS_PER_LAMPORT = 10 ** 6;
+  const wantedFeeInLamps = h.roundDown(desiredTotalFeeInSol * solana.LAMPORTS_PER_SOL);
+  const lampsPerCU = wantedFeeInLamps / DEFAULT_NUM_OF_CU_PER_TX;
+  const uLampsPerCU = lampsPerCU * uLAMPORTS_PER_LAMPORT;
+  return solana.ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: uLampsPerCU,
+  });
 }

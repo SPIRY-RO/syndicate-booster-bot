@@ -6,6 +6,7 @@ const { str, bool, num } = envalid;
 export const envConf = envalid.cleanEnv(process.env, {
   TG_BOT_TOKEN: str(),
   HTTP_RPC_URL: str(),
+  JUPITER_API_URL: str(),
   MAX_DELAY_BETWEEN_TX_SEC: num(),
   //TEST_WALLET_SECRET_KEY: str(), // used for tests only
   REVENUE_WALLET: str(),

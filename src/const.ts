@@ -5,7 +5,7 @@ import { envConf } from "./config";
 //export const CHANGE_WALLET_EVERY_N_BUYS = 999999999; // unused; debug; do not change wallet
 export const MIN_BOOSTER_BALANCE_SOL = 0.015;
 export const RESERVED_BOOSTER_BALANCE_SOL = 0.01;
-export const EMPTY_PUPPET_BALANCE_THRESHOLD = 0.006; // when a puppet is considered empty
+export const EMPTY_PUPPET_BALANCE_THRESHOLD = 0.005; // when a puppet is considered empty
 export const RESERVED_PUPPET_BALANCE = 0.005; // min to keep when transacting
 export const MIN_NEW_PUPPET_BUDGET = EMPTY_PUPPET_BALANCE_THRESHOLD + 0.002;
 
@@ -24,7 +24,7 @@ export const HOLDER_INCREMENT_STEP = 250;
 export const POOL_UPDATE_INTERVAL = 1200 * 1000;
 export const POOL_DATA_LARGE_URL = "https://api.raydium.io/v2/sdk/liquidity/mainnet.json";
 
-export const JUPITER_API_URL = "http://169.197.85.114:7676"; // self-hosted
+export const JUPITER_API_URL = envConf.JUPITER_API_URL; // self-hosted
 //export const JUPITER_API_URL = 'https://quote-api.jup.ag/v6'; // public
 
 export const JITO_BUNDLE_CHECK_TIMEOUT = 25 * 1000;
@@ -37,13 +37,14 @@ export const JITO_MAX_BUNDLES_PER_SEC_RATE_LIMIT = 50; // for our special key
 export const JITO_MAX_BUNDLE_IDS_PER_STATUS_CHECK = 5;
 
 export const SOCIALS = {
-  name: "Syndicate Boosters",
-  telegram: "",
+  name: "Syndicate Volume Bot",
+  telegram: "@SpiryBTC",
 };
 
 export const WSOL_MINT_ADDR = "So11111111111111111111111111111111111111112";
 export const DEFAULT_SOLANA_FEE_IN_LAMPS = 5000;
-export const SWAP_PRIORITY_FEE_IN_LAMPS = 10001;
+export const PRIORITY_FEE_SWAP_IN_LAMPS = 10001;
+export const PRIORITY_FEE_TRANSFER_DEFAULT_IN_LAMPS = 100000; // will be divided by 200 000, so use large whole values
 export const SWAP_SLIPPAGE_PERCENT = 1.5;
 export const SWAP_SLIPPAGE_PERCENT_FOR_VOLUME = 10;
 // total gas = cu * price1cu
@@ -52,13 +53,12 @@ export const DEFAULT_NUM_OF_CU_PER_TX = 200000; // compute units per transaction
 
 export const RENT_HOUR_TO_PRICE_MAP: any = {
   // hours : amount of SOL
-  "1": 0.5,
-  "3": 2,
-  "6": 3,
-  "12": 5,
-  "24": 1,
-  [String(7 * 24)]: 5,
-  [String(30 * 24)]: 25,
+  "1": 0.75,
+  "3": 1.5,
+  "12": 4,
+  "24": 6,
+  [String(7 * 24)]: 12,
+  [String(30 * 24)]: 20,
 };
 
 

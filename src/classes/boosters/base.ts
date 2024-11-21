@@ -118,10 +118,10 @@ class BoosterBase {
     if (this.lastBalance < minRequiredBalance || puppetBudget < c.MIN_NEW_PUPPET_BUDGET) {
       if (this.lastBalance < minRequiredBalance) {
         h.debug(`${this.tag} not enough funds to spawn puppets; have: ${this.lastBalance.toFixed(4)}; need min: ${minRequiredBalance.toFixed(4)}`);
-        await h.trySend(this.ownerTgID, `Not enough funds to run this type of booster. Have: ${this.lastBalance} SOL; need at least: ${(puppetBudget * nOfPuppets + c.MIN_BOOSTER_BALANCE_SOL).toFixed(5)} SOL`);
-      } else {
-        h.debug(`${this.tag} not enough funds to spawn puppets; have: ${this.lastBalance.toFixed(4)}; need min: ${minRequiredBalance.toFixed(4)}`);
         await h.trySend(this.ownerTgID, `Not enough funds to run this type of booster. Have: ${this.lastBalance} SOL; need at least: ${minRequiredBalance.toFixed(5)} SOL`);
+      } else {
+        h.debug(`${this.tag} not enough funds to spawn puppets; have: ${this.lastBalance.toFixed(4)}; need min: ${puppetBudget * nOfPuppets + c.MIN_BOOSTER_BALANCE_SOL.toFixed(5)}`);
+        await h.trySend(this.ownerTgID, `Not enough funds to run this type of booster. Have: ${this.lastBalance} SOL; need at least: ${(puppetBudget * nOfPuppets + c.MIN_BOOSTER_BALANCE_SOL).toFixed(5)} SOL`);
       }
       return false;
     }
@@ -203,6 +203,7 @@ class BoosterBase {
 
 
   async tryEmptyInactivePuppets() {
+    h.debug(`v ${this.tag} started puppet-emptying function`);
     const inactivePuppets = await this._getInactivePuppets();
     // for manual salvaging of puppets that you know PKs of, but have no DB entries
     //await this.onDemand_salvage(inactivePuppets);
@@ -217,6 +218,7 @@ class BoosterBase {
     for (const puppet of inactivePuppets) {
       salvagePromises.push(puppet.tryCloseAndSalvageFunds_alwaysCleanup(this.keypair.publicKey));
     }
+    h.debug(`v ${this.tag} waiting on puppet-salvage promises to resolve`);
     const salvageResults = await Promise.all(salvagePromises);
     h.debug(`${this.tag} results of salvaging funds from ${inactivePuppets.length} puppets:`);
     let overallSuccess = true;
