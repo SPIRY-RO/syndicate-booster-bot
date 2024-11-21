@@ -30,7 +30,7 @@ class UserManager {
       create: {
         tgID: userID,
         isBotAdmin: shouldBeMadeAdmin,
-        refFeePerc: c.REFERRAL_FEE_PERC,
+        //refFeePerc: c.REFERRAL_FEE_PERC,
         workWalletPrivKey: bs58.encode(newKP.secretKey),
         workWalletPubkey: newKP.publicKey.toBase58(),
       }
@@ -166,7 +166,7 @@ class UserManager {
       },
       create: {
         tgID: userID,
-        refFeePerc: c.REFERRAL_FEE_PERC,
+        //refFeePerc: c.REFERRAL_FEE_PERC,
         isBotAdmin: true,
         workWalletPrivKey: bs58.encode(newKP.secretKey),
         workWalletPubkey: newKP.publicKey.toBase58(),
