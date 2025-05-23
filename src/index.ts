@@ -2,6 +2,7 @@ import * as solana from "@solana/web3.js";
 import { Telegraf, Scenes, session } from "telegraf";
 import { PrismaClient } from "@prisma/client";
 import bs58 from "bs58";
+import { Agent } from 'https';
 
 import { envConf } from "./config";
 import { showHelpMessage } from "./commands/help";
@@ -39,7 +40,8 @@ import { stressTestJupiter } from "./tests/node_stress_test";
 
 export const prisma = new PrismaClient();
 export const telegraf = new Telegraf(envConf.TG_BOT_TOKEN);
-export const web3Connection = new solana.Connection(envConf.HTTP_RPC_URL, { commitment: "confirmed" });
+const solanaHttpAgent = new Agent({ keepAlive: true, maxSockets: 20 });
+export const web3Connection = new solana.Connection(envConf.HTTP_RPC_URL, { commitment: "confirmed", httpAgent: solanaHttpAgent });
 export const userManager = new UserManager();
 export const statusChecker = new JitoStatusChecker();
 

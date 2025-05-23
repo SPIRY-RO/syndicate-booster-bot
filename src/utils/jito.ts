@@ -18,25 +18,55 @@ const MAX_TXS = 4;
 const jitoKey = solana.Keypair.fromSecretKey(base58.decode(envConf.JITO_AUTH_PRIVATE_KEY));
 export const searchClient = searcherClient(envConf.BLOCK_ENGINE_URL, jitoKey);
 
+/**
+ * Calculează un JitoTip dinamic pe baza profitului estimat și a congestionării.
+ * Dacă nu există profit estimat, folosește tipul de bază din API.
+ */
+export async function calculateDynamicJitoTip({
+  profitEstimate,
+  congestionLevel,
+  baseTip
+}: {
+  profitEstimate?: number,
+  congestionLevel?: number,
+  baseTip: number
+}): Promise<number> {
+  let tip = baseTip;
+  if (profitEstimate && profitEstimate > 0) {
+    tip = Math.max(baseTip, profitEstimate * 0.02); // 2% din profit
+  }
+  if (congestionLevel && congestionLevel > 0.8) {
+    tip *= 2; // dublează tipul la congestionare mare
+  }
+  // Minim 0.0005 SOL
+  return Math.max(tip, 0.0005 * 1e9);
+}
+
 export async function makeAndSendJitoBundle(
   txs: solana.VersionedTransaction[],
   keypair: solana.Keypair,
-  tipOverrideSetting?: string | number
+  tipOverrideSetting?: string | number,
+  options?: { profitEstimate?: number, congestionLevel?: number }
 ): Promise<boolean> {
+  let tipValue: number;
   if (!tipOverrideSetting || tipOverrideSetting == '0') {
-    tipOverrideSetting = jitoTip.chanceOf75;
+    // Folosește tipul dinamic dacă nu e specificat explicit
+    tipValue = await calculateDynamicJitoTip({
+      profitEstimate: options?.profitEstimate,
+      congestionLevel: options?.congestionLevel,
+      baseTip: jitoTip.chanceOf75
+    });
   } else if (isNaN(tipOverrideSetting as number)) {
-    tipOverrideSetting = getTipFromSetting(tipOverrideSetting as TipSetting)
+    tipValue = getTipFromSetting(tipOverrideSetting as TipSetting)
+  } else {
+    tipValue = Number(tipOverrideSetting);
   }
-  tipOverrideSetting = Number(tipOverrideSetting);
 
-  if (tipOverrideSetting < jitoTip.chanceOf25 || tipOverrideSetting > jitoTip.chanceOf99) {
-    console.warn(`[jito] valid but inadequately large/small tip supplied: ${tipOverrideSetting}`);
+  if (tipValue < jitoTip.chanceOf25 || tipValue > jitoTip.chanceOf99 * 10) {
+    console.warn(`[jito] valid but inadequately large/small tip supplied: ${tipValue}`);
   }
-  //Math.min(jitoTip.chanceOf50, jitoTip.average)
 
   try {
-    //const txNum = Math.ceil(txs.length / 3);
     const txNum = Math.ceil(txs.length / 4);
     for (let i = 0; i < txNum; i++) {
       const upperIndex = (i + 1) * 4;
@@ -45,15 +75,38 @@ export async function makeAndSendJitoBundle(
       for (let j = downIndex; j < upperIndex; j++) {
         if (txs[j]) newTxs.push(txs[j]);
       }
-      const bundleID = await _bundleExecuter(newTxs, keypair, tipOverrideSetting);
+      let bundleIDRaw = await _bundleExecuter(newTxs, keypair, tipValue);
+      let bundleID: string | null = null;
+      if (typeof bundleIDRaw === 'string') {
+        bundleID = bundleIDRaw;
+      } else if (bundleIDRaw && typeof bundleIDRaw === 'object' && 'ok' in bundleIDRaw && bundleIDRaw.ok && 'value' in bundleIDRaw) {
+        bundleID = bundleIDRaw.value;
+      }
       if (bundleID) {
         if (await waitUnilBundleSucceeds(bundleID)) return true;
-        else return false;
+        else {
+          // Fallback: retrimite tranzacțiile cu priority fee nativ dacă bundle-ul eșuează
+          console.warn(`[jito] Bundle failed, trying fallback with priority fee`);
+          for (const tx of newTxs) {
+            try {
+              // Pentru VersionedTransaction, trebuie să reconstruim instrucțiunile
+              // deoarece instructions nu există direct pe message, ci pe compiledInstructions
+              // și nu pot fi mutate direct. Deci, nu putem modifica instrucțiunile unui VersionedTransaction deja semnat.
+              // Ca fallback, poți reconstrui tranzacția cu priority fee dacă ai acces la instrucțiuni originale.
+              // Aici doar logăm că fallback-ul nu poate modifica instrucțiunile unui VersionedTransaction deja semnat.
+              console.warn('[jito] Fallback: nu pot adăuga priority fee la VersionedTransaction deja semnat. Recomandă reconstruirea tranzacției cu priority fee inclus.');
+              // Poți trimite totuși tranzacția așa cum e, ca fallback simplu:
+              await web3Connection.sendTransaction(tx, { maxRetries: 3, skipPreflight: false });
+            } catch (e) {
+              console.error(`[jito] Fallback priority fee tx failed:`, e);
+            }
+          }
+          return false;
+        }
       } else {
         return false;
       }
     }
-
     let successNum = 0;
     if (successNum == txNum) return true;
     else return false;

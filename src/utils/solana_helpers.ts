@@ -567,14 +567,29 @@ export async function getTokenAccBalance(tokenAccount: solana.PublicKey): Promis
   }
 }
 
+// Caching pentru getSolBalance
+const solBalanceCache = new Map<string, { value: number | null, timestamp: number }>();
+const SOL_BALANCE_CACHE_TTL = 10 * 1000; // 10 secunde
+
+/**
+ * Obține soldul unui cont Solana cu caching in-memory (TTL 10 secunde).
+ * Dacă soldul a fost cerut recent, returnează valoarea din cache.
+ * Altfel, face request RPC și actualizează cache-ul.
+ */
 export async function getSolBalance(address: string | solana.PublicKey, inLamps = false) {
   if (typeof (address) === "string")
     address = new solana.PublicKey(address);
+  const cacheKey = address.toBase58() + (inLamps ? ':lamps' : ':sol');
+  const now = Date.now();
+  const cached = solBalanceCache.get(cacheKey);
+  if (cached && (now - cached.timestamp < SOL_BALANCE_CACHE_TTL)) {
+    return cached.value;
+  }
   try {
     const balanceLamps = await web3Connection.getBalance(address);
-    if (inLamps)
-      return balanceLamps;
-    return balanceLamps / solana.LAMPORTS_PER_SOL;
+    const value = inLamps ? balanceLamps : balanceLamps / solana.LAMPORTS_PER_SOL;
+    solBalanceCache.set(cacheKey, { value, timestamp: now });
+    return value;
   } catch (e: any) {
     console.error(`[${h.getShortAddr(address)}] error while getting balance: ${e}`);
     return null;
